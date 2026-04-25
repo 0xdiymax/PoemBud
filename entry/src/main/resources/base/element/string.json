@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "PoemBud main module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "诗芽古诗词学习应用"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "诗芽"
+    }
+  ]
+}
