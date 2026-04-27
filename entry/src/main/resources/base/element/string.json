@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "诗芽"
+    },
+    {
+      "name": "microphone_permission_reason",
+      "value": "用于录制孩子的跟读练习音频"
     }
   ]
 }

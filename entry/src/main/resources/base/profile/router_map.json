@@ -1,0 +1,29 @@
+{
+  "routerMap": [
+    {
+      "name": "poem",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "PoemRouteBuilder"
+    },
+    {
+      "name": "reading",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "ReadingRouteBuilder"
+    },
+    {
+      "name": "challenge",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "ChallengeRouteBuilder"
+    },
+    {
+      "name": "growth",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "GrowthRouteBuilder"
+    },
+    {
+      "name": "info",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "InfoRouteBuilder"
+    }
+  ]
+}
