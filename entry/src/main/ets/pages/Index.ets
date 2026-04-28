@@ -93,6 +93,8 @@ function openNavDestination(stack: NavPathStack, name: string, param: Object): v
 }
 
 AppStorage.setOrCreate<PoemBudData>('poemBudData', createDefaultPoemBudData());
+AppStorage.setOrCreate<string>('poemAudioPlaybackStatus', 'idle');
+AppStorage.setOrCreate<string>('poemAudioPlaybackRawPath', '');
 
 class Palette {
   static readonly paper: string = '#F7F2E8';
@@ -387,6 +389,59 @@ function getPoemAudioRawFile(poemId: string): string {
     return 'poem_yonge.wav';
   }
   return 'poem_jingyesi.wav';
+}
+
+function getActivePoemAudioStatus(rawPath: string, playbackRawPath: string, playbackStatus: string): string {
+  if (rawPath !== playbackRawPath) {
+    return 'idle';
+  }
+  return playbackStatus;
+}
+
+function getPoemAudioButtonLabel(status: string, idleLabel: string): string {
+  if (status === 'playing') {
+    return '暂停';
+  }
+  if (status === 'paused') {
+    return '继续';
+  }
+  if (status === 'loading') {
+    return '加载中';
+  }
+  return idleLabel;
+}
+
+function getPoemAudioButtonIcon(status: string): string {
+  if (status === 'playing') {
+    return 'Ⅱ';
+  }
+  return '▶';
+}
+
+function getPoemAudioButtonColor(status: string): string {
+  if (status === 'playing') {
+    return Palette.orange;
+  }
+  if (status === 'paused') {
+    return Palette.gold;
+  }
+  if (status === 'loading') {
+    return '#9AA79E';
+  }
+  return Palette.green;
+}
+
+function getPoemAudioButtonBorderColor(status: string): string {
+  if (status === 'playing') {
+    return '#D77F4A';
+  }
+  if (status === 'paused') {
+    return '#BE9348';
+  }
+  if (status === 'loading') {
+    return '#85918A';
+  }
+  return '#7D9776';
 }
 
 interface ChallengeQuestionModel {
@@ -687,12 +742,6 @@ struct PoemMiniCard {
       Text(`[唐] ${this.item.author}`)
         .fontSize(10)
         .fontColor(Palette.muted);
-
-      Image($r('app.media.icon_listen'))
-        .width(24)
-        .height(24)
-        .borderRadius(12)
-        .objectFit(ImageFit.Cover);
     }
     .width(72)
     .padding({ top: 10, bottom: 8 })
@@ -1082,6 +1131,8 @@ struct DetailTopBar {
 struct HomePage {
   stack: NavPathStack = new NavPathStack();
   @Link data: PoemBudData;
+  @StorageLink('poemAudioPlaybackStatus') audioPlaybackStatus: string = 'idle';
+  @StorageLink('poemAudioPlaybackRawPath') audioPlaybackRawPath: string = '';
   private bannerController: SwiperController = new SwiperController();
 
   private async openPoem(poemId: string): Promise<void> {
@@ -1099,13 +1150,22 @@ struct HomePage {
 
   private async playFeaturedPoem(): Promise<void> {
     const poemId = getCurrentPoemId(this.data);
-    console.info(`[PoemBud] play featured poem from home poemId=${poemId}`);
-    const next = recordPoemListening(this.data, poemId);
-    this.data = next;
-    await PoemBudStore.save(next);
+    const rawPath = this.featuredPoemAudioRawPath();
+    const playbackStatus = this.featuredPoemPlaybackStatus();
+    console.info(`[PoemBud] toggle featured poem from home poemId=${poemId} status=${playbackStatus}`);
+    if (playbackStatus === 'loading') {
+      return;
+    }
+
+    if (playbackStatus === 'idle') {
+      const next = recordPoemListening(this.data, poemId);
+      this.data = next;
+      await PoemBudStore.save(next);
+    }
+
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await PoemAudioPlayer.playRawFile(context, getPoemAudioRawFile(poemId));
+      await PoemAudioPlayer.toggleRawFile(context, rawPath);
     } catch (err) {
       console.error(`Failed to play featured poem audio: ${JSON.stringify(err)}`);
     }
@@ -1121,6 +1181,18 @@ struct HomePage {
 
   private currentPoemLines(): string[] {
     return this.currentPoem().lines;
+  }
+
+  private featuredPoemAudioRawPath(): string {
+    return getPoemAudioRawFile(getCurrentPoemId(this.data));
+  }
+
+  private featuredPoemPlaybackStatus(): string {
+    return getActivePoemAudioStatus(
+      this.featuredPoemAudioRawPath(),
+      this.audioPlaybackRawPath,
+      this.audioPlaybackStatus
+    );
   }
 
   private isGuest(): boolean {
@@ -1252,27 +1324,28 @@ struct HomePage {
               });
 
               Row({ space: 6 }) {
-                Row({ space: 6 }) {
-                  Image($r('app.media.icon_listen_glyph_v2'))
-                    .width(12)
-                    .height(12)
-                    .objectFit(ImageFit.Contain);
+                Row() {
+                  Text(getPoemAudioButtonIcon(this.featuredPoemPlaybackStatus()))
+                    .fontSize(10)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(Palette.white);
                 }
                 .width(20)
                 .height(20)
                 .borderRadius(10)
-                .backgroundColor('#6E8967')
-                .justifyContent(FlexAlign.Center);
+                .backgroundColor(getPoemAudioButtonBorderColor(this.featuredPoemPlaybackStatus()))
+                .justifyContent(FlexAlign.Center)
+                .alignItems(VerticalAlign.Center);
 
-                Text('听赏')
+                Text(getPoemAudioButtonLabel(this.featuredPoemPlaybackStatus(), '听赏'))
                   .fontSize(12)
                   .fontWeight(FontWeight.Medium)
                   .fontColor('#F8F4EA');
               }
               .padding({ left: 7, right: 12, top: 5, bottom: 5 })
               .borderRadius(15)
-              .backgroundColor('#97B18E')
-              .border({ width: 1, color: '#7D9776' })
+              .backgroundColor(getPoemAudioButtonColor(this.featuredPoemPlaybackStatus()))
+              .border({ width: 1, color: getPoemAudioButtonBorderColor(this.featuredPoemPlaybackStatus()) })
               .onClick(() => {
                 this.playFeaturedPoem();
               });
@@ -1550,18 +1623,35 @@ struct StudyPage {
   @Link data: PoemBudData;
   poemId: string = FEATURED_POEM.id;
   showTopBar: boolean = true;
+  @StorageLink('poemAudioPlaybackStatus') audioPlaybackStatus: string = 'idle';
+  @StorageLink('poemAudioPlaybackRawPath') audioPlaybackRawPath: string = '';
 
   private currentPoem(): PoemContentModel {
     return getPoemContent(this.poemId);
   }
 
+  private poemAudioRawPath(): string {
+    return getPoemAudioRawFile(this.poemId);
+  }
+
+  private poemPlaybackStatus(): string {
+    return getActivePoemAudioStatus(this.poemAudioRawPath(), this.audioPlaybackRawPath, this.audioPlaybackStatus);
+  }
+
   private async playPoemAudio(): Promise<void> {
+    const playbackStatus = this.poemPlaybackStatus();
+    if (playbackStatus === 'loading') {
+      return;
+    }
+
     try {
-      const next = recordPoemListening(this.data, this.poemId);
-      this.data = next;
-      await PoemBudStore.save(next);
+      if (playbackStatus === 'idle') {
+        const next = recordPoemListening(this.data, this.poemId);
+        this.data = next;
+        await PoemBudStore.save(next);
+      }
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await PoemAudioPlayer.playRawFile(context, getPoemAudioRawFile(this.poemId));
+      await PoemAudioPlayer.toggleRawFile(context, this.poemAudioRawPath());
     } catch (err) {
       console.error(`Failed to play poem audio: ${JSON.stringify(err)}`);
     }
@@ -1698,17 +1788,17 @@ struct StudyPage {
             Blank();
 
             Row({ space: 8 }) {
-              Text('▶')
+              Text(getPoemAudioButtonIcon(this.poemPlaybackStatus()))
                 .fontSize(14)
                 .fontColor(Palette.white)
                 .fontWeight(FontWeight.Bold);
-              Text('范读')
+              Text(getPoemAudioButtonLabel(this.poemPlaybackStatus(), '范读'))
                 .fontSize(15)
                 .fontColor(Palette.white);
             }
             .padding({ left: 18, right: 18, top: 10, bottom: 10 })
             .borderRadius(22)
-            .backgroundColor(Palette.green)
+            .backgroundColor(getPoemAudioButtonColor(this.poemPlaybackStatus()))
             .onClick(() => {
               this.playPoemAudio();
             });
@@ -2394,6 +2484,8 @@ struct ReadingPracticePage {
   poemId: string = FEATURED_POEM.id;
   @State hasResult: boolean = false;
   @State isReading: boolean = false;
+  @StorageLink('poemAudioPlaybackStatus') audioPlaybackStatus: string = 'idle';
+  @StorageLink('poemAudioPlaybackRawPath') audioPlaybackRawPath: string = '';
   private recorder: PoemRecorder = new PoemRecorder();
 
   private currentPoem(): PoemContentModel {
@@ -2405,13 +2497,28 @@ struct ReadingPracticePage {
     console.info(`[PoemBud] reading page appear poemId=${this.poemId} hasResult=${this.hasResult}`);
   }
 
+  private poemAudioRawPath(): string {
+    return getPoemAudioRawFile(this.poemId);
+  }
+
+  private poemPlaybackStatus(): string {
+    return getActivePoemAudioStatus(this.poemAudioRawPath(), this.audioPlaybackRawPath, this.audioPlaybackStatus);
+  }
+
   private async playPoemAudio(): Promise<void> {
+    const playbackStatus = this.poemPlaybackStatus();
+    if (playbackStatus === 'loading') {
+      return;
+    }
+
     try {
-      const next = recordPoemListening(this.data, this.poemId);
-      this.data = next;
-      await PoemBudStore.save(next);
+      if (playbackStatus === 'idle') {
+        const next = recordPoemListening(this.data, this.poemId);
+        this.data = next;
+        await PoemBudStore.save(next);
+      }
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await PoemAudioPlayer.playRawFile(context, getPoemAudioRawFile(this.poemId));
+      await PoemAudioPlayer.toggleRawFile(context, this.poemAudioRawPath());
     } catch (err) {
       console.error(`Failed to play poem audio: ${JSON.stringify(err)}`);
     }
@@ -2462,18 +2569,17 @@ struct ReadingPracticePage {
               .fontColor(Palette.muted);
 
             Row({ space: 8 }) {
-              Image($r('app.media.icon_listen'))
-                .width(24)
-                .height(24)
-                .borderRadius(12)
-                .objectFit(ImageFit.Cover);
-              Text('播放范读')
+              Text(getPoemAudioButtonIcon(this.poemPlaybackStatus()))
+                .fontSize(13)
+                .fontColor(Palette.white)
+                .fontWeight(FontWeight.Bold);
+              Text(getPoemAudioButtonLabel(this.poemPlaybackStatus(), '播放范读'))
                 .fontSize(13)
                 .fontColor(Palette.white);
             }
             .padding({ left: 14, right: 14, top: 8, bottom: 8 })
             .borderRadius(18)
-            .backgroundColor(Palette.green)
+            .backgroundColor(getPoemAudioButtonColor(this.poemPlaybackStatus()))
             .onClick(() => {
               this.playPoemAudio();
             });
