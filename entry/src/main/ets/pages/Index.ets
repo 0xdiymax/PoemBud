@@ -286,6 +286,19 @@ function getPoemThumbnail(poemId: string): Resource {
   return $r('app.media.thumb_jingyesi');
 }
 
+function getPoemBanner(poemId: string): Resource {
+  if (poemId === 'dengguanquelou') {
+    return $r('app.media.banner_dengguanquelou');
+  }
+  if (poemId === 'wanglushanpubu') {
+    return $r('app.media.banner_wanglushanpubu');
+  }
+  if (poemId === 'yonge') {
+    return $r('app.media.banner_yonge');
+  }
+  return $r('app.media.banner_jingyesi');
+}
+
 function getPoemMiniCardIcon(poemId: string): Resource {
   return getPoemThumbnail(poemId);
 }
@@ -365,15 +378,15 @@ function getActionIcon(routeName: string): Resource {
 
 function getPoemAudioRawFile(poemId: string): string {
   if (poemId === 'dengguanquelou') {
-    return 'poem_dengguanquelou.m4a';
+    return 'poem_dengguanquelou.wav';
   }
   if (poemId === 'wanglushanpubu') {
-    return 'poem_wanglushanpubu.m4a';
+    return 'poem_wanglushanpubu.wav';
   }
   if (poemId === 'yonge') {
-    return 'poem_yonge.m4a';
+    return 'poem_yonge.wav';
   }
-  return 'poem_jingyesi.m4a';
+  return 'poem_jingyesi.wav';
 }
 
 interface ChallengeQuestionModel {
@@ -565,6 +578,43 @@ struct SectionHeader {
       Text(this.subtitle)
         .fontSize(12)
         .fontColor(Palette.muted);
+    }
+    .alignItems(HorizontalAlign.Start)
+    .width('100%');
+  }
+}
+
+@Component
+struct PlaqueTitleHeader {
+  title: string = '';
+  image: Resource = $r('app.media.title_today_recommend_v2');
+  textColor: string = '#F8F4EA';
+  titleWidth: number = 92;
+  rightInset: number = 25;
+
+  build() {
+    Column() {
+      Stack({ alignContent: Alignment.Center }) {
+        Image(this.image)
+          .width(160)
+          .height(40)
+          .objectFit(ImageFit.Fill);
+
+        Row() {
+          Text(this.title)
+            .fontSize(17)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.textColor)
+            .textAlign(TextAlign.Center);
+        }
+        .width(this.titleWidth)
+        .height(24)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .margin({ right: this.rightInset });
+      }
+      .width(160)
+      .height(40);
     }
     .alignItems(HorizontalAlign.Start)
     .width('100%');
@@ -1049,6 +1099,7 @@ struct HomePage {
 
   private async playFeaturedPoem(): Promise<void> {
     const poemId = getCurrentPoemId(this.data);
+    console.info(`[PoemBud] play featured poem from home poemId=${poemId}`);
     const next = recordPoemListening(this.data, poemId);
     this.data = next;
     await PoemBudStore.save(next);
@@ -1062,6 +1113,14 @@ struct HomePage {
 
   private currentPoem(): PoemContentModel {
     return getPoemContent(getCurrentPoemId(this.data));
+  }
+
+  private currentPoemBanner(): Resource {
+    return getPoemBanner(getCurrentPoemId(this.data));
+  }
+
+  private currentPoemLines(): string[] {
+    return this.currentPoem().lines;
   }
 
   private isGuest(): boolean {
@@ -1088,19 +1147,17 @@ struct HomePage {
             Blank();
 
             Row({ space: 8 }) {
-              Image($r('app.media.icon_today'))
-                .width(40)
-                .height(40)
-                .borderRadius(20)
-                .objectFit(ImageFit.Cover)
+              Image($r('app.media.icon_today_header'))
+                .width(44)
+                .height(44)
+                .objectFit(ImageFit.Contain)
                 .onClick(() => {
                   this.openPoem('jingyesi');
                 });
-              Image($r('app.media.icon_profile'))
-                .width(40)
-                .height(40)
-                .borderRadius(20)
-                .objectFit(ImageFit.Cover)
+              Image($r('app.media.icon_profile_header_v2'))
+                .width(44)
+                .height(44)
+                .objectFit(ImageFit.Contain)
                 .onClick(() => {
                   if (this.isGuest()) {
                     openNavDestination(this.stack, 'info', new InfoRouteParam('游客模式', '当前还没有本地学习档案。', '进入“我的”页面，点击未登录卡片即可创建本地档案。'));
@@ -1111,132 +1168,131 @@ struct HomePage {
             }
           }
           .width('100%');
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 20 });
-
-        Swiper(this.bannerController) {
-          ForEach(HOME_BANNER_POEM_IDS, (poemId: string) => {
-            Image(poemId === 'jingyesi' ? $r('app.media.poem_home_hero') : getPoemThumbnail(poemId))
-              .width('100%')
-              .height(240)
-              .borderRadius(32)
-              .objectFit(ImageFit.Cover)
-              .onClick(() => {
-                this.openPoem(poemId);
-              });
-          }, (poemId: string) => poemId);
-        }
-        .width('100%')
-        .height(240)
-        .autoPlay(true)
-        .interval(3200)
-        .loop(true)
-        .duration(500)
-        .indicator(
-          new DotIndicator()
-            .itemWidth(8)
-            .itemHeight(8)
-            .selectedItemWidth(18)
-            .selectedItemHeight(8)
-            .color('#D5D9CF')
-            .selectedColor(Palette.green)
-        );
-
-        Column({ space: 18 }) {
-          Row({ space: 10 }) {
-            Image($r('app.media.icon_today'))
-              .width(44)
-              .height(44)
-              .borderRadius(16)
-              .objectFit(ImageFit.Cover);
-            SectionHeader({ title: '今日推荐', subtitle: '点击诗卡进入详情，也可以直接听赏。' });
           }
-          .width('100%');
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 20 });
+
+        Column() {
+          Swiper(this.bannerController) {
+            ForEach(HOME_BANNER_POEM_IDS, (poemId: string) => {
+              Image(getPoemBanner(poemId))
+                .width('100%')
+                .height(204)
+                .borderRadius(30)
+                .objectFit(ImageFit.Cover)
+                .onClick(() => {
+                  this.openPoem(poemId);
+                });
+            }, (poemId: string) => poemId);
+          }
+          .width('100%')
+          .height(204)
+          .autoPlay(true)
+          .interval(3200)
+          .loop(true)
+          .duration(500)
+          .indicator(
+            new DotIndicator()
+              .itemWidth(8)
+              .itemHeight(8)
+              .selectedItemWidth(18)
+              .selectedItemHeight(8)
+              .color('#D5D9CF')
+              .selectedColor(Palette.green)
+          );
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16 });
+
+        Column({ space: 4 }) {
+          PlaqueTitleHeader({
+            title: '今日推荐',
+            image: $r('app.media.title_today_recommend_v2'),
+            textColor: '#F8F4EA',
+            titleWidth: 92,
+            rightInset: 25
+          });
 
           Column({ space: 14 }) {
-            Row({ space: 14 }) {
-              Image(getPoemThumbnail(getCurrentPoemId(this.data)))
-                .width(110)
-                .height(110)
-                .borderRadius(24)
-                .objectFit(ImageFit.Cover);
+            Row({ space: 12 }) {
+              Row({ space: 12 }) {
+                Image(this.currentPoemBanner())
+                  .width(110)
+                  .height(96)
+                  .borderRadius(16)
+                  .objectFit(ImageFit.Cover);
 
-              Column({ space: 8 }) {
-                Text(this.currentPoem().title)
-                  .fontSize(24)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(Palette.ink);
+                Column({ space: 4 }) {
+                  Text(this.currentPoem().title)
+                    .fontSize(20)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(Palette.ink);
 
-                Text(`[${this.currentPoem().dynasty}] ${this.currentPoem().author}`)
-                  .fontSize(12)
-                  .fontColor(Palette.muted);
+                  Text(`[${this.currentPoem().dynasty}] ${this.currentPoem().author}`)
+                    .fontSize(11)
+                    .fontColor(Palette.muted);
 
-                Text(this.currentPoem().lines[0])
-                  .fontSize(14)
-                  .fontColor(Palette.ink);
-
-                Text(this.currentPoem().lines[1])
-                  .fontSize(14)
-                  .fontColor(Palette.ink);
+                  Column({ space: 2 }) {
+                    ForEach(this.currentPoemLines(), (line: string) => {
+                      Text(line)
+                        .fontSize(11)
+                        .lineHeight(15)
+                        .fontColor(Palette.ink);
+                    }, (line: string) => line);
+                  }
+                  .alignItems(HorizontalAlign.Start);
+                }
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Start);
               }
               .layoutWeight(1)
-              .alignItems(HorizontalAlign.Start);
-            }
-            .width('100%');
-
-            Row({ space: 12 }) {
-              Row({ space: 8 }) {
-                Image($r('app.media.icon_listen'))
-                  .width(26)
-                  .height(26)
-                  .borderRadius(13)
-                  .objectFit(ImageFit.Cover);
-                Text('听赏')
-                  .fontSize(13)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor(Palette.green);
-              }
-              .padding({ left: 14, right: 14, top: 8, bottom: 8 })
-              .borderRadius(18)
-              .backgroundColor(Palette.greenSoft)
-              .onClick(() => {
-                this.playFeaturedPoem();
-              });
-
-              Row() {
-                Text('继续学习')
-                  .fontSize(13)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor(Palette.orange);
-              }
-              .padding({ left: 14, right: 14, top: 8, bottom: 8 })
-              .borderRadius(18)
-              .backgroundColor(Palette.orangeSoft)
+              .alignItems(VerticalAlign.Top)
               .onClick(() => {
                 this.openPoem(getCurrentPoemId(this.data));
               });
+
+              Row({ space: 6 }) {
+                Row({ space: 6 }) {
+                  Image($r('app.media.icon_listen_glyph_v2'))
+                    .width(12)
+                    .height(12)
+                    .objectFit(ImageFit.Contain);
+                }
+                .width(20)
+                .height(20)
+                .borderRadius(10)
+                .backgroundColor('#6E8967')
+                .justifyContent(FlexAlign.Center);
+
+                Text('听赏')
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor('#F8F4EA');
+              }
+              .padding({ left: 7, right: 12, top: 5, bottom: 5 })
+              .borderRadius(15)
+              .backgroundColor('#97B18E')
+              .border({ width: 1, color: '#7D9776' })
+              .onClick(() => {
+                this.playFeaturedPoem();
+              });
             }
-            .alignSelf(ItemAlign.End);
+            .alignItems(VerticalAlign.Bottom)
+            .width('100%');
           }
           .width('100%')
-          .padding(18)
-          .borderRadius(28)
+          .padding(16)
+          .borderRadius(26)
           .backgroundColor(Palette.card)
-          .border({ width: 1, color: Palette.border })
-          .onClick(() => {
-            this.openPoem(getCurrentPoemId(this.data));
-          });
+          .border({ width: 1, color: '#C7D8C7' });
 
-          Row({ space: 10 }) {
-            Image($r('app.media.icon_hot'))
-              .width(44)
-              .height(44)
-              .borderRadius(16)
-              .objectFit(ImageFit.Cover);
-            SectionHeader({ title: '热门古诗', subtitle: '每一张诗卡都能点击进入详情。' });
-          }
-          .width('100%');
+          PlaqueTitleHeader({
+            title: '热门古诗',
+            image: $r('app.media.title_hot_poems'),
+            textColor: '#FFF3E6',
+            titleWidth: 96,
+            rightInset: 18
+          });
 
           Row({ space: 10 }) {
             ForEach(POPULAR_POEMS, (item: PoemCardModel) => {
