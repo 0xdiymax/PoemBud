@@ -68,6 +68,15 @@ interface GrowthMetricModel {
   symbol: string;
 }
 
+interface StudyMilestoneModel {
+  label: string;
+  value: string;
+  days: number;
+  outerColor: string;
+  innerColor: string;
+  ribbonColor: string;
+}
+
 class PoemRouteParam {
   poemId: string = 'jingyesi';
 
@@ -216,6 +225,12 @@ const RECENT_STUDIES: RecentStudyModel[] = [
   { title: '登鹳雀楼', author: '王之涣', daysAgo: '昨天学习', progress: 3, accent: Palette.blue, symbol: '楼' },
   { title: '望庐山瀑布', author: '李白', daysAgo: '2天前学习', progress: 3, accent: Palette.orange, symbol: '瀑' },
   { title: '咏鹅', author: '骆宾王', daysAgo: '3天前学习', progress: 2, accent: Palette.peach, symbol: '鹅' }
+];
+
+const STUDY_MILESTONES: StudyMilestoneModel[] = [
+  { label: '7天', value: '7', days: 7, outerColor: '#CA8851', innerColor: '#F3D7B0', ribbonColor: '#B86B3D' },
+  { label: '14天', value: '14', days: 14, outerColor: '#B9C2CC', innerColor: '#EEF2F5', ribbonColor: '#98A2AD' },
+  { label: '30天', value: '30', days: 30, outerColor: '#D7B24F', innerColor: '#F4E3A8', ribbonColor: '#C89128' }
 ];
 
 const EXPLAINS: PoemLineExplainModel[] = [
@@ -442,6 +457,41 @@ function getPoemAudioButtonBorderColor(status: string): string {
     return '#85918A';
   }
   return '#7D9776';
+}
+
+function getStudyProgressDays(data: PoemBudData): number {
+  return Math.max(data.progress.totalStudyDays, data.progress.streakDays);
+}
+
+function getStudyProgressPercent(studyDays: number): number {
+  const days = Math.max(0, studyDays);
+  if (days <= 0) {
+    return 0;
+  }
+  if (days < 7) {
+    return days / 7 * 33;
+  }
+  if (days < 14) {
+    return 33 + (days - 7) / 7 * 33;
+  }
+  if (days < 30) {
+    return 66 + (days - 14) / 16 * 34;
+  }
+  return 100;
+}
+
+function getStudyProgressHint(studyDays: number): string {
+  const days = Math.max(0, studyDays);
+  if (days === 0) {
+    return '开始今日学习';
+  }
+  for (let index = 0; index < STUDY_MILESTONES.length; index += 1) {
+    const milestone = STUDY_MILESTONES[index];
+    if (days < milestone.days) {
+      return `距${milestone.label}还差${milestone.days - days}天`;
+    }
+  }
+  return '已点亮全部勋章';
 }
 
 interface ChallengeQuestionModel {
@@ -718,6 +768,62 @@ struct ProgressTrack {
         .backgroundColor(this.color);
     }
     .width('100%');
+  }
+}
+
+@Component
+struct StudyMilestoneBadge {
+  milestone: StudyMilestoneModel = STUDY_MILESTONES[0];
+  reached: boolean = false;
+
+  build() {
+    Column({ space: 3 }) {
+      Stack({ alignContent: Alignment.Bottom }) {
+        Row({ space: 4 }) {
+          Column()
+            .width(7)
+            .height(10)
+            .borderRadius(3)
+            .backgroundColor(this.reached ? this.milestone.ribbonColor : '#DED2C1');
+
+          Column()
+            .width(7)
+            .height(10)
+            .borderRadius(3)
+            .backgroundColor(this.reached ? this.milestone.ribbonColor : '#DED2C1');
+        }
+        .margin({ top: 20 });
+
+        Stack({ alignContent: Alignment.Center }) {
+          Row()
+            .width(30)
+            .height(30)
+            .borderRadius(15)
+            .backgroundColor(this.reached ? this.milestone.outerColor : '#E5DAC7');
+
+          Row()
+            .width(22)
+            .height(22)
+            .borderRadius(11)
+            .backgroundColor(this.reached ? this.milestone.innerColor : '#F6EFE3');
+
+          Text(this.milestone.value)
+            .fontSize(this.milestone.value.length > 1 ? 9 : 11)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.reached ? '#6A4724' : '#9C907F');
+        }
+      }
+      .width(34)
+      .height(36);
+
+      Text(this.milestone.label)
+        .fontSize(9)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.reached ? Palette.ink : Palette.muted);
+    }
+    .width(36)
+    .alignItems(HorizontalAlign.Center)
+    .opacity(this.reached ? 1 : 0.72);
   }
 }
 
@@ -1379,75 +1485,175 @@ struct HomePage {
           .backgroundColor(Palette.card)
           .border({ width: 1, color: Palette.border });
 
-          Row({ space: 10 }) {
-            Image($r('app.media.icon_progress'))
-              .width(44)
-              .height(44)
-              .borderRadius(16)
-              .objectFit(ImageFit.Cover);
-            SectionHeader({
-              title: '学习进度',
-              subtitle: `点击查看学习报告。今天学习${this.data.progress.todayMinutes}分钟，连续学习${this.data.progress.streakDays}天。`
-            });
-          }
-          .width('100%');
+          Stack() {
+            Image($r('app.media.bg_study_progress_card'))
+              .width('100%')
+              .height('100%')
+              .borderRadius(30)
+              .objectFit(ImageFit.Fill);
 
-          Column({ space: 14 }) {
-            Row() {
-              Column({ space: 6 }) {
-                Text('本周目标')
-                  .fontSize(12)
-                  .fontColor(Palette.muted);
-
-                Text(`已完成 ${this.data.progress.weeklyGoalPercent}%`)
-                  .fontSize(24)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(Palette.ink);
-              }
-              .alignItems(HorizontalAlign.Start);
-
-              Blank();
-
-              Column({ space: 8 }) {
-                Text(`${this.data.progress.streakDays}天`)
-                  .fontSize(14)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(Palette.green);
-
-                Text('30天')
-                  .fontSize(12)
-                  .fontColor(Palette.muted);
-              }
-              .alignItems(HorizontalAlign.End);
-            }
-
-            ProgressTrack({ percent: this.data.progress.weeklyGoalPercent, color: Palette.green });
-
-            Row({ space: 10 }) {
+            Column({ space: 8 }) {
               Row() {
-                Text(`累计学习 ${this.data.progress.streakDays} 天`)
-                  .fontSize(12)
-                  .fontColor(Palette.green);
-              }
-              .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-              .borderRadius(14)
-              .backgroundColor(Palette.greenSoft);
+                Row({ space: 8 }) {
+                  Text('学习进度')
+                    .fontSize(17)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(Palette.ink);
+                }
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .borderRadius(16)
+                .backgroundColor('#FFF8EC')
+                .border({ width: 1, color: '#D8CBB3' });
 
-              Row() {
-                Text(`已掌握 ${this.data.progress.masteredPoems} 首`)
-                  .fontSize(12)
-                  .fontColor(Palette.orange);
+                Blank();
+
+                Row({ space: 4 }) {
+                  Text('查看报告')
+                    .fontSize(11)
+                    .fontColor('#8A7B66');
+
+                  Text('>')
+                    .fontSize(12)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor('#8A7B66');
+                }
               }
-              .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-              .borderRadius(14)
-              .backgroundColor(Palette.orangeSoft);
+              .width('100%')
+              .alignItems(VerticalAlign.Center);
+
+              Row({ space: 8 }) {
+                Row({ space: 8 }) {
+                  Stack({ alignContent: Alignment.Center }) {
+                    Row()
+                      .width(62)
+                      .height(62)
+                      .borderRadius(31)
+                      .backgroundColor('#F6EAD5');
+
+                    Image($r('app.media.icon_study_progress_emblem'))
+                      .width(54)
+                      .height(54)
+                      .borderRadius(27)
+                      .objectFit(ImageFit.Cover);
+                  }
+
+                  Column({ space: 5 }) {
+                    Text('今日学习')
+                      .fontSize(11)
+                      .fontColor(Palette.muted)
+                      .maxLines(1);
+
+                    Row({ space: 3 }) {
+                      Text(`${this.data.progress.todayMinutes}`)
+                        .fontSize(25)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor('#355645')
+                        .maxLines(1);
+
+                      Text('分钟')
+                        .fontSize(11)
+                        .fontColor('#7F6D59')
+                        .maxLines(1);
+                    }
+                    .alignItems(VerticalAlign.Bottom);
+
+                    Row({ space: 3 }) {
+                      Text('累计学习')
+                        .fontSize(10)
+                        .fontColor('#8A7B66')
+                        .maxLines(1);
+
+                      Text(`${getStudyProgressDays(this.data)}`)
+                        .fontSize(16)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor('#C27A49')
+                        .maxLines(1);
+
+                      Text('天')
+                        .fontSize(10)
+                        .fontColor('#8A7B66')
+                        .maxLines(1);
+                    }
+                    .alignItems(VerticalAlign.Bottom);
+                  }
+                  .layoutWeight(1)
+                  .alignItems(HorizontalAlign.Start);
+                }
+                .width(136)
+                .alignItems(VerticalAlign.Center);
+
+                Column({ space: 4 }) {
+                  Row() {
+                    ForEach(STUDY_MILESTONES, (milestone: StudyMilestoneModel) => {
+                      StudyMilestoneBadge({
+                        milestone: milestone,
+                        reached: getStudyProgressDays(this.data) >= milestone.days
+                      });
+                    }, (milestone: StudyMilestoneModel) => milestone.label);
+                  }
+                  .width('100%')
+                  .justifyContent(FlexAlign.SpaceBetween);
+
+                  Stack({ alignContent: Alignment.Start }) {
+                    Row()
+                      .width('100%')
+                      .height(8)
+                      .borderRadius(8)
+                      .backgroundColor('#E9DDC9');
+
+                    Row()
+                      .width(`${getStudyProgressPercent(getStudyProgressDays(this.data))}%`)
+                      .height(8)
+                      .borderRadius(8)
+                      .backgroundColor('#6C9A78');
+
+                    Row() {
+                      Blank();
+
+                      Row()
+                        .width(14)
+                        .height(14)
+                        .borderRadius(7)
+                        .backgroundColor('#FFF8EA')
+                        .border({ width: 3, color: '#C78950' });
+                    }
+                    .width(`${Math.max(getStudyProgressPercent(getStudyProgressDays(this.data)), 8)}%`)
+                    .height(14)
+                    .alignItems(VerticalAlign.Center);
+                  }
+                  .width('100%')
+                  .height(14);
+
+                  Row({ space: 4 }) {
+                    Text(getStudyProgressHint(getStudyProgressDays(this.data)))
+                      .fontSize(9)
+                      .fontColor('#7F6D59')
+                      .maxLines(1);
+
+                    Blank();
+
+                    Text(`本周 ${this.data.progress.weeklyGoalPercent}%`)
+                      .fontSize(9)
+                      .fontWeight(FontWeight.Medium)
+                      .fontColor('#567760')
+                      .maxLines(1);
+                  }
+                  .width('100%')
+                  .alignItems(VerticalAlign.Center);
+                }
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Start);
+              }
+              .width('100%')
+              .alignItems(VerticalAlign.Center);
             }
+            .width('100%')
+            .height('100%')
+            .padding({ left: 16, right: 16, top: 12, bottom: 12 });
           }
           .width('100%')
-          .padding(18)
-          .borderRadius(28)
-          .backgroundColor(Palette.card)
-          .border({ width: 1, color: Palette.border })
+          .height(166)
+          .borderRadius(30)
           .onClick(() => {
             this.openGrowth();
           });
