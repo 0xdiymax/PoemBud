@@ -243,6 +243,7 @@ function categoryToModel(categoryId: string, symbol: string, accent: string): Ca
 
 const POEM_CONTENTS: PoemContentModel[] = OFFLINE_POEMS.map((poem: OfflinePoem) => offlinePoemToContent(poem));
 const POEM_SEQUENCE: string[] = OFFLINE_POEMS.map((poem: OfflinePoem) => poem.id);
+const CHALLENGE_POEM_IDS: string[] = ['jingyesi', 'dengguanquelou', 'chunxiao', 'wanglushanpubu', 'yonge'];
 const HOME_BANNER_POEM_IDS: string[] = ['chunxiao', 'jingyesi', 'dengguanquelou'];
 const POPULAR_POEMS: PoemCardModel[] = getRecommendedPoems().slice(0, 4).map((poem: OfflinePoem) => offlinePoemToCard(poem));
 const FAVORITE_POEMS: PoemCardModel[] = POPULAR_POEMS;
@@ -414,6 +415,11 @@ function getNextPoemId(poemId: string): string {
     return POEM_SEQUENCE[0];
   }
   return POEM_SEQUENCE[currentIndex + 1];
+}
+
+function getChallengePoemId(level: number): string {
+  const index = Math.min(Math.max(level, 1), CHALLENGE_POEM_IDS.length) - 1;
+  return CHALLENGE_POEM_IDS[index] ?? CHALLENGE_POEM_IDS[0];
 }
 
 function getFavoriteCards(data: PoemBudData): PoemCardModel[] {
@@ -630,7 +636,7 @@ function getChallengeQuestion(poemId: string): ChallengeQuestionModel {
     prefixA: blankA.prefix,
     suffixA: blankA.suffix,
     answerA: blankA.answer,
-    middleLine: poem.lines.length > 2 ? poem.lines[1] : getPoemLead(poem),
+    middleLine: poem.lines.length > 2 ? poem.lines[1] : '',
     prefixB: blankB.prefix,
     suffixB: blankB.suffix,
     answerB: blankB.answer,
@@ -3400,11 +3406,15 @@ struct ChallengePage {
   @State secondBlank: string = '';
 
   aboutToAppear(): void {
-    console.info(`[PoemBud] challenge page appear poemId=${this.poemId} level=${this.data.challenge.currentLevel}`);
+    console.info(`[PoemBud] challenge page appear routePoemId=${this.poemId} challengePoemId=${this.challengePoemId()} level=${this.data.challenge.currentLevel}`);
+  }
+
+  private challengePoemId(): string {
+    return getChallengePoemId(this.data.challenge.currentLevel);
   }
 
   private question(): ChallengeQuestionModel {
-    return getChallengeQuestion(this.poemId);
+    return getChallengeQuestion(this.challengePoemId());
   }
 
   private isSuccess(): boolean {
@@ -3438,7 +3448,7 @@ struct ChallengePage {
 
   private async persistChallengeSuccess(): Promise<void> {
     if (this.isSuccess()) {
-      const next = completeChallenge(this.data, this.poemId);
+      const next = completeChallenge(this.data, this.question().poemId);
       this.data = next;
       await PoemBudStore.save(next);
     }
@@ -3462,37 +3472,44 @@ struct ChallengePage {
             .borderRadius(30)
             .objectFit(ImageFit.Cover);
 
-          Row({ space: 10 }) {
+          Column({ space: 12 }) {
             Row() {
-              Text(`第${this.data.challenge.currentLevel}关`)
-                .fontSize(18)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(Palette.ink);
-            }
-            .padding({ left: 14, right: 14, top: 10, bottom: 10 })
-            .borderRadius(20)
-            .backgroundColor(Palette.card);
-
-            Blank();
-
-            Text(`⭐ ${this.data.progress.totalStars}`)
-              .fontSize(14)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(Palette.orange);
-
-            ForEach([1, 2, 3, 4, 5], (item: number) => {
               Row() {
-                Text(`${item}`)
-                  .fontSize(14)
+                Text(`第${this.data.challenge.currentLevel}关`)
+                  .fontSize(18)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor(item <= this.data.challenge.currentLevel ? Palette.white : Palette.muted);
+                  .fontColor(Palette.ink);
               }
-              .width(34)
-              .height(34)
-              .borderRadius(17)
-              .backgroundColor(item < this.data.challenge.currentLevel ? Palette.green : item === this.data.challenge.currentLevel ? Palette.orange : '#D9D5CE')
-              .justifyContent(FlexAlign.Center);
-            }, (item: number) => `${item}`);
+              .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+              .borderRadius(20)
+              .backgroundColor(Palette.card);
+
+              Blank();
+
+              Text(`⭐ ${this.data.progress.totalStars}`)
+                .fontSize(14)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Palette.orange);
+            }
+            .width('100%');
+
+            Row({ space: 6 }) {
+              ForEach([1, 2, 3, 4, 5], (item: number) => {
+                Row() {
+                  Text(`${item}`)
+                    .fontSize(11)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(item <= this.data.challenge.currentLevel ? Palette.white : Palette.muted);
+                }
+                .width(26)
+                .height(26)
+                .borderRadius(13)
+                .backgroundColor(item < this.data.challenge.currentLevel ? Palette.green : item === this.data.challenge.currentLevel ? Palette.orange : '#D9D5CE')
+                .justifyContent(FlexAlign.Center);
+              }, (item: number) => `${item}`);
+            }
+            .width('100%')
+            .justifyContent(FlexAlign.SpaceBetween);
           }
           .width('100%')
           .padding(16)
@@ -3514,60 +3531,64 @@ struct ChallengePage {
               .fontSize(16)
               .fontColor(Palette.green);
 
-            Row({ space: 8 }) {
+            Flex({ wrap: FlexWrap.Wrap, alignItems: ItemAlign.Center }) {
               Text(this.question().prefixA)
-                .fontSize(26)
+                .fontSize(22)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
 
               Row() {
                 Text(this.firstBlank.length > 0 ? this.firstBlank : ' ')
-                  .fontSize(24)
+                  .fontSize(22)
                   .fontWeight(FontWeight.Bold)
                   .fontColor(Palette.green);
               }
-              .width(72)
-              .height(46)
+              .width(56)
+              .height(38)
               .borderRadius(16)
               .backgroundColor(Palette.cardAlt)
               .border({ width: 1, color: Palette.green })
               .justifyContent(FlexAlign.Center);
 
               Text(this.question().suffixA)
-                .fontSize(26)
+                .fontSize(22)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(Palette.ink);
+            }
+            .width('100%');
+
+            if (this.question().middleLine.length > 0) {
+              Text(this.question().middleLine)
+                .fontSize(22)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
             }
 
-            Text(this.question().middleLine)
-              .fontSize(26)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Palette.ink);
-
-            Row({ space: 8 }) {
+            Flex({ wrap: FlexWrap.Wrap, alignItems: ItemAlign.Center }) {
               Text(this.question().prefixB)
-                .fontSize(26)
+                .fontSize(22)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
 
               Row() {
                 Text(this.secondBlank.length > 0 ? this.secondBlank : ' ')
-                  .fontSize(24)
+                  .fontSize(22)
                   .fontWeight(FontWeight.Bold)
                   .fontColor(Palette.green);
               }
-              .width(72)
-              .height(46)
+              .width(56)
+              .height(38)
               .borderRadius(16)
               .backgroundColor(Palette.cardAlt)
               .border({ width: 1, color: Palette.green })
               .justifyContent(FlexAlign.Center);
 
               Text(this.question().suffixB)
-                .fontSize(26)
+                .fontSize(22)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
             }
+            .width('100%');
           }
           .width('100%')
           .padding(20)
@@ -3643,7 +3664,7 @@ struct ChallengePage {
                 .borderRadius(20)
                 .backgroundColor(Palette.greenSoft)
                 .onClick(() => {
-                  openNavDestination(this.stack, 'poem', new PoemRouteParam(this.poemId));
+                  openNavDestination(this.stack, 'poem', new PoemRouteParam(this.question().poemId));
                 });
               }
             }
@@ -3712,7 +3733,7 @@ struct ChallengePage {
             .backgroundColor(Palette.card)
             .border({ width: 1, color: Palette.border })
             .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('诗意小讲堂', this.question().title, getPoemContent(this.poemId).lead));
+              openNavDestination(this.stack, 'info', new InfoRouteParam('诗意小讲堂', this.question().title, getPoemContent(this.question().poemId).lead));
             });
 
             Row({ space: 8 }) {
@@ -3727,7 +3748,7 @@ struct ChallengePage {
             .backgroundColor(Palette.card)
             .border({ width: 1, color: Palette.border })
             .onClick(() => {
-              openNavDestination(this.stack, 'poem', new PoemRouteParam(this.poemId));
+              openNavDestination(this.stack, 'poem', new PoemRouteParam(this.question().poemId));
             });
           }
           .width('100%')
