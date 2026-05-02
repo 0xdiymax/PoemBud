@@ -160,6 +160,53 @@ const FEATURED_POEM: PoemCardModel = {
   accent: Palette.green
 };
 
+interface PoemInterpretationModel {
+  id: string;
+  content: string;
+}
+
+const POEM_INTERPRETATIONS: PoemInterpretationModel[] = [
+  { id: 'jingyesi', content: '《静夜思》写旅人在夜里看见床前月光，误以为地上铺了一层白霜。抬头望月，低头想家，动作很简单，却把思乡之情写得很真切。\n\n这首诗适合引导孩子观察“月光、白霜、故乡”三个意象：月光照亮眼前，也牵出远方的家。朗读时前两句放慢，后两句读出安静和想念。' },
+  { id: 'dengguanquelou', content: '《登鹳雀楼》先写登楼所见：白日靠着群山落下，黄河奔流入海；再写登高后的愿望：想看得更远，就要再上一层楼。\n\n诗里有开阔的景色，也有向上的道理。可以告诉孩子，这不是单纯写风景，而是在说学习和成长都需要一步一步往上走。' },
+  { id: 'chunxiao', content: '《春晓》写春天早晨醒来后的感受：睡得香甜，不知天已亮；到处都是鸟鸣，又想到夜里风雨吹落了花。\n\n这首诗把声音和想象连在一起，孩子可以先听鸟声、想雨声，再想象落花。朗读时语气轻柔，读出春晨的清新和一点点惜春。' },
+  { id: 'wanglushanpubu', content: '《望庐山瀑布》写诗人远望庐山瀑布的壮丽景象。阳光照着香炉峰，云雾像紫烟升起，瀑布高悬山前，奔流直下，像银河从天上落下来。\n\n这首诗最精彩的是夸张想象。可以让孩子抓住“飞流”“三千尺”“银河”来感受瀑布的高度、速度和气势。' },
+  { id: 'yonge', content: '《咏鹅》用孩子容易看见的画面写白鹅：鹅仰着弯弯的脖子鸣叫，白色羽毛浮在绿水上，红掌拨动清波。\n\n这首诗颜色鲜明、节奏活泼，适合低龄孩子边看图边读。读“鹅，鹅，鹅”时可以读出白鹅叫声的趣味。' },
+  { id: 'xiaochi', content: '《小池》写初夏池塘的细小景致：泉水悄悄流出，树阴映在水面，小荷刚露出尖尖角，蜻蜓已经停在上面。\n\n诗人没有写大场面，而是抓住安静、细小又有生命力的一瞬间。可以引导孩子观察“尖尖角”和“蜻蜓”，感受夏天刚开始的清新。' },
+  { id: 'qingming', content: '《清明》写清明时节细雨纷纷，路上行人心情低落，于是向人打听哪里有酒家，牧童远远指向杏花村。\n\n诗里既有节令气氛，也有路途中人的情绪。讲给孩子时，可以说明清明是追思亲人的日子，所以雨景和行人的心情互相映衬。' },
+  { id: 'shanxing', content: '《山行》写诗人在深秋山路上看到寒山、石径、白云和枫林。诗人因为喜爱傍晚的枫林而停车欣赏，红叶比二月春花还鲜艳。\n\n这首诗的重点是“爱”字：诗人不是怕秋天冷清，而是发现了秋天热烈明亮的美。' },
+  { id: 'fengqiaoyebo', content: '《枫桥夜泊》写诗人夜里停船苏州城外，月落、乌啼、霜天、渔火、钟声交织在一起，形成一幅清冷孤寂的夜景。\n\n这首诗适合让孩子听“钟声”的想象：看得见的景物和听得见的声音一起出现，旅途中的孤单就更明显。' },
+  { id: 'minnong-2', content: '《悯农》写农人在烈日下锄禾，汗水滴进田土。最后提醒人们，碗里的每一粒米都来之不易。\n\n这首诗不是只写劳动辛苦，更是在教孩子珍惜粮食。朗读时后两句要读得郑重一些。' },
+  { id: 'jiangxue', content: '《江雪》写大雪封山后，鸟飞尽、人踪灭，天地之间只剩一位披蓑戴笠的老人，在寒江上独自钓鱼。\n\n画面很冷、很静，也有一种坚定。可以让孩子感受“千山、万径、孤舟、独钓”的层层缩小。' },
+  { id: 'xunyinzhebuyu', content: '《寻隐者不遇》写诗人到松树下寻找隐者，只遇见童子。童子说老师采药去了，就在这座山中，可云雾太深，不知道具体在哪里。\n\n这首诗用对话写出山林幽深和隐者行踪不定，读起来像一个小故事。' },
+  { id: 'xiangsi', content: '《相思》借红豆表达思念。红豆生长在南方，春天发芽生枝，人们常把它当作相思的象征。\n\n诗人没有直接说“我很想你”，而是把情感放进一颗小小的红豆里，含蓄又深情。' },
+  { id: 'luchai', content: '《鹿柴》写空山中看不见人，只听到人声回响；夕阳返照进深林，又照在青苔上。\n\n这首诗的妙处在安静：以声音衬托空山，以微光写出幽深。可以让孩子想象一束光照进树林的画面。' },
+  { id: 'songyuanershianxi', content: '《送元二使安西》写清晨雨后，渭城尘土被洗净，客舍边柳色青青。诗人劝朋友再喝一杯酒，因为出了阳关就难遇故人。\n\n这首诗是送别诗，景色清新，情感却依依不舍。柳色和酒杯都在表达珍重。' },
+  { id: 'jiuyuejiuyirandongxiongdi', content: '《九月九日忆山东兄弟》写诗人重阳节独在异乡，格外思念亲人。他想象兄弟们登高插茱萸时，唯独少了自己。\n\n这首诗适合讲“节日更想家”：越是团圆的日子，离家的人越容易感到孤单。' },
+  { id: 'zaofabaidicheng', content: '《早发白帝城》写清晨从白帝城出发，顺江而下，一日之间就回到江陵。两岸猿声不断，轻舟已经越过万重青山。\n\n诗里有速度，也有轻快心情。读的时候可以读出船行飞快、心情舒畅的感觉。' },
+  { id: 'wangtianshan', content: '《望天门山》写长江冲开天门山，碧水东流又回旋。两岸青山相对出现，一叶孤帆从日边驶来。\n\n这首诗画面开阔，动感很强。山、水、帆都像在移动，读起来要有气势。' },
+  { id: 'jueju-dufu', content: '《绝句》写黄鹂在翠柳间鸣叫，白鹭飞上青天；窗外可见西岭积雪，门前停着通往东吴的船。\n\n诗中颜色明亮、空间开阔，把春天的生机和远方的想象写在四句里。' },
+  { id: 'chunyexiyu', content: '《春夜喜雨》赞美春雨来得正及时。它随着春天悄悄发生，夜里随风潜入，细细滋润万物而不喧哗。\n\n这首诗的情感是“喜”，但写得很含蓄。可以让孩子体会“细无声”的温柔。' },
+  { id: 'liangzhouci-wanghan', content: '《凉州词》写边塞将士在战前举杯，琵琶声催人出征。诗中既有豪放，也有战争的不确定。\n\n讲给孩子时重点放在边塞诗的气氛：酒杯、琵琶、战场共同写出将士的勇敢与悲壮。' },
+  { id: 'chusai', content: '《出塞》从秦汉明月和边关写起，想到长期征战中人们不能归家。诗人希望有良将守边，让百姓免受战争之苦。\n\n这首诗不是鼓励战争，而是表达对和平和安宁的期盼。' },
+  { id: 'youziyin', content: '《游子吟》写母亲为即将远行的孩子缝衣，针脚密密，是担心孩子迟迟不能回来。最后用小草难报春晖，比喻儿女难以报答母爱。\n\n这首诗情感真挚，适合引导孩子理解父母日常照顾里的爱。' },
+  { id: 'fudeguyuancaosongbie', content: '《赋得古原草送别》从原上草写起：一年一枯一荣，野火烧不尽，春风吹又生。后面借芳草连绵，表达送别时绵长的情意。\n\n草的生命力很强，也象征离别后的牵挂不断。' },
+  { id: 'huanghelousongmenghaoran', content: '《黄鹤楼送孟浩然之广陵》写朋友从黄鹤楼辞别，三月去扬州。诗人望着孤帆远去，直到只看见长江流向天边。\n\n这首诗的送别情感藏在“望”里：船越走越远，思念却越来越深。' },
+  { id: 'zengwanglun', content: '《赠汪伦》写李白将要乘船离开时，忽然听到岸上传来踏歌声。桃花潭水很深，却比不上汪伦送别的情谊。\n\n诗中用夸张比较表达友情，读起来亲切、明快。' },
+  { id: 'yeshushansi', content: '《夜宿山寺》写山寺高楼仿佛有百尺高，伸手就能摘到星辰。诗人不敢高声说话，好像怕惊动天上的人。\n\n这首诗充满童话般的想象，适合让孩子感受夸张带来的奇妙。' },
+  { id: 'duzuojingtingshan', content: '《独坐敬亭山》写鸟飞尽、孤云远去后，诗人只和敬亭山默默相对。山不厌人，人也不厌山。\n\n这首诗写独处时的安静陪伴，把山写成了可以相看相知的朋友。' },
+  { id: 'jiangnan', content: '《江南》写江南采莲的热闹景象，莲叶茂盛，鱼儿在莲叶间东、西、南、北游来游去。\n\n诗句反复有节奏，像歌谣一样活泼，适合孩子边读边想象鱼儿穿梭。' },
+  { id: 'chilege', content: '《敕勒歌》写阴山下辽阔草原：天空像巨大的毡帐，笼罩四方；天地苍茫，风吹草低时露出牛羊。\n\n这首民歌画面非常开阔，能让孩子感受草原的辽远和生命气息。' },
+  { id: 'meihua', content: '《梅花》写墙角几枝梅花在严寒中独自开放。远远看去像雪，却能闻到淡淡香气，才知道那是梅花。\n\n诗里写出梅花不怕寒冷、清香自持的品格。' },
+  { id: 'suojian', content: '《所见》写牧童骑在黄牛背上唱歌，歌声在树林间回荡。他忽然想捕蝉，就马上闭口站住。\n\n这首诗抓住儿童生活中的一个小动作，天真、机灵又有画面感。' },
+  { id: 'cunju', content: '《村居》写早春二月草长莺飞、杨柳拂堤，孩子们放学早，趁着东风放风筝。\n\n诗中春景和儿童活动合在一起，读起来轻快明亮。' },
+  { id: 'chishang', content: '《池上》写小孩撑着小船偷偷采白莲，回来时不知道隐藏踪迹，水面浮萍被划开，留下了一道痕迹。\n\n这首诗有童趣，也有小小的调皮。画面简单，故事感很强。' },
+  { id: 'suxinshixugongdian', content: '《宿新市徐公店》写乡村小路、稀疏篱笆和新绿树头。儿童追赶黄蝶，蝴蝶飞入菜花中，再也找不到。\n\n这首诗把春日乡村和孩子追蝶的瞬间写得生动可爱。' },
+  { id: 'xiaochujingcisi', content: '《晓出净慈寺送林子方》写六月西湖景色与其他季节不同：莲叶连天无边碧绿，荷花映着太阳格外红艳。\n\n这首诗色彩强烈，适合让孩子感受“无穷碧”和“别样红”的视觉冲击。' },
+  { id: 'yuanri', content: '《元日》写新年到来：爆竹声中旧岁过去，春风送来温暖，人们喝屠苏酒，千家万户迎着朝阳换上新桃符。\n\n这首诗写的是春节的热闹和辞旧迎新的喜气。' },
+  { id: 'bochuanguazhou', content: '《泊船瓜洲》写诗人停船瓜洲，京口和瓜洲只隔一水，钟山也不远。春风又吹绿江南岸，明月何时照我回家？\n\n诗里既有春色，也有思乡。一个“绿”字把春风写得有生命力。' },
+  { id: 'huichongchunjiangwanjing', content: '《惠崇春江晚景》写竹外桃花初开，春江水暖，鸭子最先知道。蒌蒿满地、芦芽短短，都是早春的信号。\n\n这首诗像给画配诗，用细节写出春天刚来的生机。' }
+];
+
 function makePoemSymbol(title: string): string {
   return title.length > 0 ? title.substring(0, 1) : '诗';
 }
@@ -196,11 +243,21 @@ function getPoemLead(poem: OfflinePoem): string {
   return '读熟诗句，再试着说出诗里的画面。';
 }
 
+function getPoemInterpretationText(poemId: string): string {
+  const item = POEM_INTERPRETATIONS.find((value: PoemInterpretationModel) => value.id === poemId);
+  if (item) {
+    return item.content;
+  }
+  const poem = getOfflinePoemById(poemId);
+  return `${poem.title}通过具体景物和动作表达诗人的感受。读这首诗时，可以先找出画面中的人物、地点和声音，再想一想诗人为什么要这样写。`;
+}
+
 function buildExplainCards(poem: OfflinePoem): PoemLineExplainModel[] {
+  const interpretation = getPoemInterpretationText(poem.id).split('\n\n')[0];
   return poem.lines.map((line: string, index: number): PoemLineExplainModel => {
     return {
       title: line,
-      meaning: `先读熟这一句，再找一找诗里的关键词：${line.replace(/[，。！？；：、]/g, ' ')}`,
+      meaning: index === 0 ? interpretation : `这一句继续展开诗中的画面：${line.replace(/[，。！？；：、]/g, ' ')}`,
       symbol: `${index + 1}`
     };
   });
@@ -351,8 +408,14 @@ function getCurrentPoemId(data: PoemBudData): string {
 }
 
 function getPoemThumbnail(poemId: string): Resource {
+  if (poemId === 'jingyesi') {
+    return $r('app.media.thumb_jingyesi');
+  }
   if (poemId === 'dengguanquelou') {
     return $r('app.media.thumb_dengguanquelou');
+  }
+  if (poemId === 'chunxiao') {
+    return $r('app.media.thumb_chunxiao');
   }
   if (poemId === 'wanglushanpubu') {
     return $r('app.media.thumb_wanglushanpubu');
@@ -360,8 +423,35 @@ function getPoemThumbnail(poemId: string): Resource {
   if (poemId === 'yonge') {
     return $r('app.media.thumb_yonge');
   }
+  if (poemId === 'xiaochi') {
+    return $r('app.media.thumb_xiaochi');
+  }
+  if (poemId === 'qingming') {
+    return $r('app.media.thumb_qingming');
+  }
+  if (poemId === 'shanxing') {
+    return $r('app.media.thumb_shanxing');
+  }
+  if (poemId === 'fengqiaoyebo') {
+    return $r('app.media.thumb_fengqiaoyebo');
+  }
+  if (poemId === 'minnong-2') {
+    return $r('app.media.thumb_minnong_2');
+  }
   const poem = getOfflinePoemById(poemId);
-  if (poem.categories.includes('spring') || poem.categories.includes('summer')) {
+  if (poem.categories.includes('labor')) {
+    return $r('app.media.thumb_minnong_2');
+  }
+  if (poem.categories.includes('autumn')) {
+    return $r('app.media.thumb_shanxing');
+  }
+  if (poem.categories.includes('summer')) {
+    return $r('app.media.thumb_xiaochi');
+  }
+  if (poem.categories.includes('spring')) {
+    return $r('app.media.thumb_chunxiao');
+  }
+  if (poem.categories.includes('animal')) {
     return $r('app.media.thumb_yonge');
   }
   if (poem.categories.includes('landscape')) {
@@ -374,8 +464,14 @@ function getPoemThumbnail(poemId: string): Resource {
 }
 
 function getPoemBanner(poemId: string): Resource {
+  if (poemId === 'jingyesi') {
+    return $r('app.media.banner_jingyesi');
+  }
   if (poemId === 'dengguanquelou') {
     return $r('app.media.banner_dengguanquelou');
+  }
+  if (poemId === 'chunxiao') {
+    return $r('app.media.banner_chunxiao');
   }
   if (poemId === 'wanglushanpubu') {
     return $r('app.media.banner_wanglushanpubu');
@@ -383,8 +479,35 @@ function getPoemBanner(poemId: string): Resource {
   if (poemId === 'yonge') {
     return $r('app.media.banner_yonge');
   }
+  if (poemId === 'xiaochi') {
+    return $r('app.media.banner_xiaochi');
+  }
+  if (poemId === 'qingming') {
+    return $r('app.media.banner_qingming');
+  }
+  if (poemId === 'shanxing') {
+    return $r('app.media.banner_shanxing');
+  }
+  if (poemId === 'fengqiaoyebo') {
+    return $r('app.media.banner_fengqiaoyebo');
+  }
+  if (poemId === 'minnong-2') {
+    return $r('app.media.banner_minnong_2');
+  }
   const poem = getOfflinePoemById(poemId);
-  if (poem.categories.includes('spring') || poem.categories.includes('summer')) {
+  if (poem.categories.includes('labor')) {
+    return $r('app.media.banner_minnong_2');
+  }
+  if (poem.categories.includes('autumn')) {
+    return $r('app.media.banner_shanxing');
+  }
+  if (poem.categories.includes('summer')) {
+    return $r('app.media.banner_xiaochi');
+  }
+  if (poem.categories.includes('spring')) {
+    return $r('app.media.banner_chunxiao');
+  }
+  if (poem.categories.includes('animal')) {
     return $r('app.media.banner_yonge');
   }
   if (poem.categories.includes('landscape')) {
@@ -394,6 +517,47 @@ function getPoemBanner(poemId: string): Resource {
     return $r('app.media.banner_jingyesi');
   }
   return $r('app.media.banner_jingyesi');
+}
+
+function getCategoryThumbnail(categoryId: string): Resource {
+  if (categoryId === 'moon' || categoryId === 'homesick') {
+    return $r('app.media.thumb_jingyesi');
+  }
+  if (categoryId === 'spring' || categoryId === 'nature') {
+    return $r('app.media.thumb_chunxiao');
+  }
+  if (categoryId === 'summer') {
+    return $r('app.media.thumb_xiaochi');
+  }
+  if (categoryId === 'autumn') {
+    return $r('app.media.thumb_shanxing');
+  }
+  if (categoryId === 'festival') {
+    return $r('app.media.thumb_qingming');
+  }
+  if (categoryId === 'labor') {
+    return $r('app.media.thumb_minnong_2');
+  }
+  if (categoryId === 'animal') {
+    return $r('app.media.thumb_yonge');
+  }
+  if (categoryId === 'landscape' || categoryId === 'inspiration') {
+    return $r('app.media.thumb_dengguanquelou');
+  }
+  return $r('app.media.thumb_wanglushanpubu');
+}
+
+function getTabIcon(index: number): Resource {
+  if (index === 1) {
+    return $r('app.media.tab_library_icon');
+  }
+  if (index === 2) {
+    return $r('app.media.tab_study_icon');
+  }
+  if (index === 3) {
+    return $r('app.media.tab_profile_icon');
+  }
+  return $r('app.media.tab_home_icon');
 }
 
 function getPoemMiniCardIcon(poemId: string): Resource {
@@ -668,17 +832,12 @@ struct Index {
   @Builder
   tabBuilder(label: string, shortLabel: string, index: number, accent: string) {
     Column({ space: 6 }) {
-      Row() {
-        Text(shortLabel)
-          .fontSize(12)
-          .fontColor(this.currentIndex === index ? Palette.white : accent)
-          .fontWeight(FontWeight.Bold);
-      }
-      .width(30)
-      .height(30)
-      .borderRadius(15)
-      .backgroundColor(this.currentIndex === index ? accent : '#F0E7DA')
-      .justifyContent(FlexAlign.Center);
+      Image(getTabIcon(index))
+        .width(34)
+        .height(34)
+        .borderRadius(17)
+        .objectFit(ImageFit.Cover)
+        .border({ width: this.currentIndex === index ? 2 : 0, color: accent });
 
       Text(label)
         .fontSize(11)
@@ -976,17 +1135,11 @@ struct CategoryCard {
 
   build() {
     Column({ space: 10 }) {
-      Row() {
-        Text(this.item.symbol)
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(Palette.white);
-      }
-      .width(56)
-      .height(56)
-      .borderRadius(18)
-      .backgroundColor(this.item.accent)
-      .justifyContent(FlexAlign.Center);
+      Image(getCategoryThumbnail(this.item.id))
+        .width(72)
+        .height(72)
+        .borderRadius(22)
+        .objectFit(ImageFit.Cover);
 
       Text(this.item.title)
         .fontSize(18)
@@ -2125,7 +2278,7 @@ struct StudyPage {
             .borderRadius(18)
             .backgroundColor(Palette.greenSoft)
             .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('诗词赏析', this.currentPoem().title, this.currentPoem().lead));
+              openNavDestination(this.stack, 'info', new InfoRouteParam('诗词赏析', this.currentPoem().title, getPoemInterpretationText(this.poemId)));
             });
           }
 
@@ -3733,7 +3886,7 @@ struct ChallengePage {
             .backgroundColor(Palette.card)
             .border({ width: 1, color: Palette.border })
             .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('诗意小讲堂', this.question().title, getPoemContent(this.question().poemId).lead));
+              openNavDestination(this.stack, 'info', new InfoRouteParam('诗意小讲堂', this.question().title, getPoemInterpretationText(this.question().poemId)));
             });
 
             Row({ space: 8 }) {
