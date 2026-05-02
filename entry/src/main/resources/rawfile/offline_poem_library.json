@@ -1,0 +1,1380 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-02",
+  "runtimeMode": "offline",
+  "sourceSummary": "精选儿童启蒙古诗，部分条目参考 chinese-poetry MIT 数据源并做简体化与本地字段整理；App 运行时不访问网络接口。",
+  "licenseNotice": "chinese-poetry data is MIT licensed. See docs/third-party-data-sources.md for attribution and license notes.",
+  "sourceRepositories": [
+    {
+      "name": "chinese-poetry/chinese-poetry",
+      "url": "https://github.com/chinese-poetry/chinese-poetry",
+      "license": "MIT",
+      "usage": "开发期抽取诗词正文和基础元数据，转为本地静态数据。"
+    },
+    {
+      "name": "meetqy/aspoem",
+      "url": "https://github.com/meetqy/aspoem",
+      "license": "AGPL-3.0 per README",
+      "usage": "仅参考其数据生成思路；不复制代码。"
+    },
+    {
+      "name": "liruifengv/we-drawing",
+      "url": "https://github.com/liruifengv/we-drawing",
+      "license": "MIT",
+      "usage": "确认其诗词来自今日诗词 API，不作为离线数据源。"
+    }
+  ],
+  "categories": [
+    {
+      "id": "starter",
+      "name": "启蒙必背",
+      "description": "适合低龄孩子建立兴趣的短诗。",
+      "poemCount": 11
+    },
+    {
+      "id": "tang",
+      "name": "唐诗",
+      "description": "唐代经典诗词。",
+      "poemCount": 28
+    },
+    {
+      "id": "song",
+      "name": "宋诗",
+      "description": "宋代经典诗词。",
+      "poemCount": 7
+    },
+    {
+      "id": "moon",
+      "name": "咏月诗",
+      "description": "以明月、夜色、思乡为主题。",
+      "poemCount": 4
+    },
+    {
+      "id": "spring",
+      "name": "春天的诗",
+      "description": "描写春景、春雨和春日生活。",
+      "poemCount": 11
+    },
+    {
+      "id": "summer",
+      "name": "夏天的诗",
+      "description": "描写荷、莲、蝉和夏日景象。",
+      "poemCount": 5
+    },
+    {
+      "id": "autumn",
+      "name": "秋天的诗",
+      "description": "描写秋景与山行。",
+      "poemCount": 1
+    },
+    {
+      "id": "winter",
+      "name": "冬天的诗",
+      "description": "描写雪、梅与寒江。",
+      "poemCount": 2
+    },
+    {
+      "id": "landscape",
+      "name": "山水田园",
+      "description": "描写山川、河流、田园和自然景物。",
+      "poemCount": 11
+    },
+    {
+      "id": "farewell",
+      "name": "送别诗",
+      "description": "表达朋友离别和祝愿。",
+      "poemCount": 4
+    },
+    {
+      "id": "festival",
+      "name": "节日诗",
+      "description": "与传统节日相关的诗。",
+      "poemCount": 3
+    },
+    {
+      "id": "childhood",
+      "name": "童趣诗",
+      "description": "适合儿童共情的生活画面。",
+      "poemCount": 4
+    },
+    {
+      "id": "frontier",
+      "name": "边塞诗",
+      "description": "展现边塞和战争主题。",
+      "poemCount": 2
+    },
+    {
+      "id": "nature",
+      "name": "自然诗",
+      "description": "描写花鸟草木和四时变化。",
+      "poemCount": 7
+    },
+    {
+      "id": "homesick",
+      "name": "思乡诗",
+      "description": "表达想家和亲情。",
+      "poemCount": 3
+    },
+    {
+      "id": "animal",
+      "name": "动物诗",
+      "description": "以动物为主角或意象。",
+      "poemCount": 1
+    },
+    {
+      "id": "labor",
+      "name": "劳动诗",
+      "description": "珍惜粮食和劳动成果。",
+      "poemCount": 1
+    },
+    {
+      "id": "family",
+      "name": "亲情诗",
+      "description": "表达亲子和家庭情感。",
+      "poemCount": 1
+    },
+    {
+      "id": "friendship",
+      "name": "友情诗",
+      "description": "表达朋友情谊。",
+      "poemCount": 1
+    },
+    {
+      "id": "inspiration",
+      "name": "志向诗",
+      "description": "表达进取和登高望远。",
+      "poemCount": 1
+    },
+    {
+      "id": "imagination",
+      "name": "想象诗",
+      "description": "富有夸张和想象。",
+      "poemCount": 2
+    },
+    {
+      "id": "travel",
+      "name": "行旅诗",
+      "description": "描写旅途和泊舟。",
+      "poemCount": 2
+    },
+    {
+      "id": "han",
+      "name": "汉乐府",
+      "description": "汉代乐府民歌。",
+      "poemCount": 1
+    },
+    {
+      "id": "folk",
+      "name": "民歌",
+      "description": "民间歌谣。",
+      "poemCount": 1
+    },
+    {
+      "id": "qing",
+      "name": "清诗",
+      "description": "清代适合儿童学习的诗。",
+      "poemCount": 2
+    },
+    {
+      "id": "season",
+      "name": "四时节令",
+      "description": "与季节变化有关。",
+      "poemCount": 1
+    },
+    {
+      "id": "emotion",
+      "name": "情感诗",
+      "description": "表达思念、珍惜和情绪。",
+      "poemCount": 1
+    }
+  ],
+  "poems": [
+    {
+      "id": "jingyesi",
+      "title": "静夜思",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "床前明月光，疑是地上霜。",
+        "举头望明月，低头思故乡。"
+      ],
+      "categories": [
+        "tang",
+        "moon",
+        "homesick",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "幼小衔接-一年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 1,
+      "lineCount": 2,
+      "pinyin": [
+        "chuáng qián míng yuè guāng， yí shì dì shàng shuāng。",
+        "jǔ tóu wàng míng yuè， dī tóu sī gù xiāng。"
+      ],
+      "searchableText": "静夜思  李白 唐 床前明月光，疑是地上霜。举头望明月，低头思故乡。",
+      "tags": [
+        "tang",
+        "moon",
+        "homesick",
+        "starter"
+      ]
+    },
+    {
+      "id": "dengguanquelou",
+      "title": "登鹳雀楼",
+      "dynasty": "唐",
+      "author": "王之涣",
+      "lines": [
+        "白日依山尽，黄河入海流。",
+        "欲穷千里目，更上一层楼。"
+      ],
+      "categories": [
+        "tang",
+        "landscape",
+        "inspiration",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 2,
+      "lineCount": 2,
+      "pinyin": [
+        "bái rì yī shān jìn， huáng hé rù hǎi liú。",
+        "yù qióng qiān lǐ mù， gèng shàng yì céng lóu。"
+      ],
+      "searchableText": "登鹳雀楼  王之涣 唐 白日依山尽，黄河入海流。欲穷千里目，更上一层楼。",
+      "tags": [
+        "tang",
+        "landscape",
+        "inspiration",
+        "starter"
+      ]
+    },
+    {
+      "id": "chunxiao",
+      "title": "春晓",
+      "dynasty": "唐",
+      "author": "孟浩然",
+      "lines": [
+        "春眠不觉晓，处处闻啼鸟。",
+        "夜来风雨声，花落知多少。"
+      ],
+      "categories": [
+        "tang",
+        "spring",
+        "nature",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 3,
+      "lineCount": 2,
+      "pinyin": [
+        "chūn mián bù jué xiǎo， chù chù wén tí niǎo。",
+        "yè lái fēng yǔ shēng， huā luò zhī duō shǎo。"
+      ],
+      "searchableText": "春晓  孟浩然 唐 春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",
+      "tags": [
+        "tang",
+        "spring",
+        "nature",
+        "starter"
+      ]
+    },
+    {
+      "id": "wanglushanpubu",
+      "title": "望庐山瀑布",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "日照香炉生紫烟，遥看瀑布挂前川。",
+        "飞流直下三千尺，疑是银河落九天。"
+      ],
+      "categories": [
+        "tang",
+        "landscape",
+        "imagination"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 4,
+      "lineCount": 2,
+      "pinyin": [
+        "rì zhào xiāng lú shēng zǐ yān， yáo kàn pù bù guà qián chuān。",
+        "fēi liú zhí xià sān qiān chǐ， yí shì yín hé luò jiǔ tiān。"
+      ],
+      "searchableText": "望庐山瀑布  李白 唐 日照香炉生紫烟，遥看瀑布挂前川。飞流直下三千尺，疑是银河落九天。",
+      "tags": [
+        "tang",
+        "landscape",
+        "imagination"
+      ]
+    },
+    {
+      "id": "yonge",
+      "title": "咏鹅",
+      "dynasty": "唐",
+      "author": "骆宾王",
+      "lines": [
+        "鹅，鹅，鹅，曲项向天歌。",
+        "白毛浮绿水，红掌拨清波。"
+      ],
+      "categories": [
+        "tang",
+        "animal",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "幼小衔接",
+      "source": "public-domain-curated",
+      "order": 5,
+      "lineCount": 2,
+      "pinyin": [
+        "é， é， é， qǔ xiàng xiàng tiān gē。",
+        "bái máo fú lǜ shuǐ， hóng zhǎng bō qīng bō。"
+      ],
+      "searchableText": "咏鹅  骆宾王 唐 鹅，鹅，鹅，曲项向天歌。白毛浮绿水，红掌拨清波。",
+      "tags": [
+        "tang",
+        "animal",
+        "starter"
+      ]
+    },
+    {
+      "id": "xiaochi",
+      "title": "小池",
+      "dynasty": "宋",
+      "author": "杨万里",
+      "lines": [
+        "泉眼无声惜细流，树阴照水爱晴柔。",
+        "小荷才露尖尖角，早有蜻蜓立上头。"
+      ],
+      "categories": [
+        "song",
+        "summer",
+        "nature",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 6,
+      "lineCount": 2,
+      "pinyin": [
+        "quán yǎn wú shēng xī xì liú， shù yīn zhào shuǐ ài qíng róu。",
+        "xiǎo hé cái lù jiān jiān jiǎo， zǎo yǒu qīng tíng lì shàng tóu。"
+      ],
+      "searchableText": "小池  杨万里 宋 泉眼无声惜细流，树阴照水爱晴柔。小荷才露尖尖角，早有蜻蜓立上头。",
+      "tags": [
+        "song",
+        "summer",
+        "nature",
+        "starter"
+      ]
+    },
+    {
+      "id": "qingming",
+      "title": "清明",
+      "dynasty": "唐",
+      "author": "杜牧",
+      "lines": [
+        "清明时节雨纷纷，路上行人欲断魂。",
+        "借问酒家何处有，牧童遥指杏花村。"
+      ],
+      "categories": [
+        "tang",
+        "season",
+        "festival"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/qianjiashi.json",
+      "order": 7,
+      "lineCount": 2,
+      "pinyin": [
+        "qīng míng shí jié yǔ fēn fēn， lù shang xíng rén yù duàn hún。",
+        "jiè wèn jiǔ jiā hé chù yǒu， mù tóng yáo zhǐ xìng huā cūn。"
+      ],
+      "searchableText": "清明  杜牧 唐 清明时节雨纷纷，路上行人欲断魂。借问酒家何处有，牧童遥指杏花村。",
+      "tags": [
+        "tang",
+        "season",
+        "festival"
+      ]
+    },
+    {
+      "id": "shanxing",
+      "title": "山行",
+      "dynasty": "唐",
+      "author": "杜牧",
+      "lines": [
+        "远上寒山石径斜，白云生处有人家。",
+        "停车坐爱枫林晚，霜叶红于二月花。"
+      ],
+      "categories": [
+        "tang",
+        "autumn",
+        "landscape"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 8,
+      "lineCount": 2,
+      "pinyin": [
+        "yuǎn shàng hán shān shí jìng xié， bái yún shēng chù yǒu rén jiā。",
+        "tíng chē zuò ài fēng lín wǎn， shuāng yè hóng yú èr yuè huā。"
+      ],
+      "searchableText": "山行  杜牧 唐 远上寒山石径斜，白云生处有人家。停车坐爱枫林晚，霜叶红于二月花。",
+      "tags": [
+        "tang",
+        "autumn",
+        "landscape"
+      ]
+    },
+    {
+      "id": "fengqiaoyebo",
+      "title": "枫桥夜泊",
+      "dynasty": "唐",
+      "author": "张继",
+      "lines": [
+        "月落乌啼霜满天，江枫渔火对愁眠。",
+        "姑苏城外寒山寺，夜半钟声到客船。"
+      ],
+      "categories": [
+        "tang",
+        "moon",
+        "travel"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 9,
+      "lineCount": 2,
+      "pinyin": [
+        "yuè luò wū tí shuāng mǎn tiān， jiāng fēng yú huǒ duì chóu mián。",
+        "gū sū chéng wài hán shān sì， yè bàn zhōng shēng dào kè chuán。"
+      ],
+      "searchableText": "枫桥夜泊  张继 唐 月落乌啼霜满天，江枫渔火对愁眠。姑苏城外寒山寺，夜半钟声到客船。",
+      "tags": [
+        "tang",
+        "moon",
+        "travel"
+      ]
+    },
+    {
+      "id": "minnong-2",
+      "title": "悯农",
+      "subtitle": "其二",
+      "dynasty": "唐",
+      "author": "李绅",
+      "lines": [
+        "锄禾日当午，汗滴禾下土。",
+        "谁知盘中餐，粒粒皆辛苦。"
+      ],
+      "categories": [
+        "tang",
+        "labor",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 10,
+      "lineCount": 2,
+      "pinyin": [
+        "chú hé rì dāng wǔ， hàn dī hé xià tǔ。",
+        "shuí zhī pán zhōng cān， lì lì jiē xīn kǔ。"
+      ],
+      "searchableText": "悯农 其二 李绅 唐 锄禾日当午，汗滴禾下土。谁知盘中餐，粒粒皆辛苦。",
+      "tags": [
+        "tang",
+        "labor",
+        "starter"
+      ]
+    },
+    {
+      "id": "jiangxue",
+      "title": "江雪",
+      "dynasty": "唐",
+      "author": "柳宗元",
+      "lines": [
+        "千山鸟飞绝，万径人踪灭。",
+        "孤舟蓑笠翁，独钓寒江雪。"
+      ],
+      "categories": [
+        "tang",
+        "winter",
+        "landscape"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 11,
+      "lineCount": 2,
+      "pinyin": [
+        "qiān shān niǎo fēi jué， wàn jìng rén zōng miè。",
+        "gū zhōu suō lì wēng， dú diào hán jiāng xuě。"
+      ],
+      "searchableText": "江雪  柳宗元 唐 千山鸟飞绝，万径人踪灭。孤舟蓑笠翁，独钓寒江雪。",
+      "tags": [
+        "tang",
+        "winter",
+        "landscape"
+      ]
+    },
+    {
+      "id": "xunyinzhebuyu",
+      "title": "寻隐者不遇",
+      "dynasty": "唐",
+      "author": "贾岛",
+      "lines": [
+        "松下问童子，言师采药去。",
+        "只在此山中，云深不知处。"
+      ],
+      "categories": [
+        "tang",
+        "landscape"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 12,
+      "lineCount": 2,
+      "pinyin": [
+        "sōng xià wèn tóng zǐ， yán shī cǎi yào qù。",
+        "zhī zài cǐ shān zhōng， yún shēn bù zhī chù。"
+      ],
+      "searchableText": "寻隐者不遇  贾岛 唐 松下问童子，言师采药去。只在此山中，云深不知处。",
+      "tags": [
+        "tang",
+        "landscape"
+      ]
+    },
+    {
+      "id": "xiangsi",
+      "title": "相思",
+      "dynasty": "唐",
+      "author": "王维",
+      "lines": [
+        "红豆生南国，春来发几枝。",
+        "愿君多采撷，此物最相思。"
+      ],
+      "categories": [
+        "tang",
+        "spring",
+        "emotion"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 13,
+      "lineCount": 2,
+      "pinyin": [
+        "hóng dòu shēng nán guó， chūn lái fā jǐ zhī。",
+        "yuàn jūn duō cǎi xié， cǐ wù zuì xiāng sī。"
+      ],
+      "searchableText": "相思  王维 唐 红豆生南国，春来发几枝。愿君多采撷，此物最相思。",
+      "tags": [
+        "tang",
+        "spring",
+        "emotion"
+      ]
+    },
+    {
+      "id": "luchai",
+      "title": "鹿柴",
+      "dynasty": "唐",
+      "author": "王维",
+      "lines": [
+        "空山不见人，但闻人语响。",
+        "返景入深林，复照青苔上。"
+      ],
+      "categories": [
+        "tang",
+        "landscape",
+        "nature"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 14,
+      "lineCount": 2,
+      "pinyin": [
+        "kōng shān bú jiàn rén， dàn wén rén yǔ xiǎng。",
+        "fǎn jǐng rù shēn lín， fù zhào qīng tái shàng。"
+      ],
+      "searchableText": "鹿柴  王维 唐 空山不见人，但闻人语响。返景入深林，复照青苔上。",
+      "tags": [
+        "tang",
+        "landscape",
+        "nature"
+      ]
+    },
+    {
+      "id": "songyuanershianxi",
+      "title": "送元二使安西",
+      "dynasty": "唐",
+      "author": "王维",
+      "lines": [
+        "渭城朝雨浥轻尘，客舍青青柳色新。",
+        "劝君更尽一杯酒，西出阳关无故人。"
+      ],
+      "categories": [
+        "tang",
+        "farewell"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "chinese-poetry/蒙学/qianjiashi.json",
+      "order": 15,
+      "lineCount": 2,
+      "pinyin": [
+        "wèi chéng cháo yǔ yì qīng chén， kè shè qīng qīng liǔ sè xīn。",
+        "quàn jūn gèng jìn yì bēi jiǔ， xī chū yáng guān wú gù rén。"
+      ],
+      "searchableText": "送元二使安西  王维 唐 渭城朝雨浥轻尘，客舍青青柳色新。劝君更尽一杯酒，西出阳关无故人。",
+      "tags": [
+        "tang",
+        "farewell"
+      ]
+    },
+    {
+      "id": "jiuyuejiuyirandongxiongdi",
+      "title": "九月九日忆山东兄弟",
+      "dynasty": "唐",
+      "author": "王维",
+      "lines": [
+        "独在异乡为异客，每逢佳节倍思亲。",
+        "遥知兄弟登高处，遍插茱萸少一人。"
+      ],
+      "categories": [
+        "tang",
+        "festival",
+        "homesick"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 16,
+      "lineCount": 2,
+      "pinyin": [
+        "dú zài yì xiāng wèi yì kè， měi féng jiā jié bèi sī qīn。",
+        "yáo zhī xiōng dì dēng gāo chù， biàn chā zhū yú shǎo yì rén。"
+      ],
+      "searchableText": "九月九日忆山东兄弟  王维 唐 独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。",
+      "tags": [
+        "tang",
+        "festival",
+        "homesick"
+      ]
+    },
+    {
+      "id": "zaofabaidicheng",
+      "title": "早发白帝城",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "朝辞白帝彩云间，千里江陵一日还。",
+        "两岸猿声啼不住，轻舟已过万重山。"
+      ],
+      "categories": [
+        "tang",
+        "landscape",
+        "travel"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 17,
+      "lineCount": 2,
+      "pinyin": [
+        "cháo cí bái dì cǎi yún jiān， qiān lǐ jiāng líng yí rì hái。",
+        "liǎng àn yuán shēng tí bú zhù， qīng zhōu yǐ guò wàn chóng shān。"
+      ],
+      "searchableText": "早发白帝城  李白 唐 朝辞白帝彩云间，千里江陵一日还。两岸猿声啼不住，轻舟已过万重山。",
+      "tags": [
+        "tang",
+        "landscape",
+        "travel"
+      ]
+    },
+    {
+      "id": "wangtianshan",
+      "title": "望天门山",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "天门中断楚江开，碧水东流至此回。",
+        "两岸青山相对出，孤帆一片日边来。"
+      ],
+      "categories": [
+        "tang",
+        "landscape"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 18,
+      "lineCount": 2,
+      "pinyin": [
+        "tiān mén zhōng duàn chǔ jiāng kāi， bì shuǐ dōng liú zhì cǐ huí。",
+        "liǎng àn qīng shān xiāng duì chū， gū fān yí piàn rì biān lái。"
+      ],
+      "searchableText": "望天门山  李白 唐 天门中断楚江开，碧水东流至此回。两岸青山相对出，孤帆一片日边来。",
+      "tags": [
+        "tang",
+        "landscape"
+      ]
+    },
+    {
+      "id": "jueju-dufu",
+      "title": "绝句",
+      "dynasty": "唐",
+      "author": "杜甫",
+      "lines": [
+        "两个黄鹂鸣翠柳，一行白鹭上青天。",
+        "窗含西岭千秋雪，门泊东吴万里船。"
+      ],
+      "categories": [
+        "tang",
+        "spring",
+        "nature"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "chinese-poetry/蒙学/qianjiashi.json",
+      "order": 19,
+      "lineCount": 2,
+      "pinyin": [
+        "liǎng gè huáng lí míng cuì liǔ， yì háng bái lù shàng qīng tiān。",
+        "chuāng hán xī lǐng qiān qiū xuě， mén bó dōng wú wàn lǐ chuán。"
+      ],
+      "searchableText": "绝句  杜甫 唐 两个黄鹂鸣翠柳，一行白鹭上青天。窗含西岭千秋雪，门泊东吴万里船。",
+      "tags": [
+        "tang",
+        "spring",
+        "nature"
+      ]
+    },
+    {
+      "id": "chunyexiyu",
+      "title": "春夜喜雨",
+      "dynasty": "唐",
+      "author": "杜甫",
+      "lines": [
+        "好雨知时节，当春乃发生。",
+        "随风潜入夜，润物细无声。"
+      ],
+      "categories": [
+        "tang",
+        "spring",
+        "nature"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 20,
+      "lineCount": 2,
+      "pinyin": [
+        "hǎo yǔ zhī shí jié， dāng chūn nǎi fā shēng。",
+        "suí fēng qián rù yè， rùn wù xì wú shēng。"
+      ],
+      "searchableText": "春夜喜雨  杜甫 唐 好雨知时节，当春乃发生。随风潜入夜，润物细无声。",
+      "tags": [
+        "tang",
+        "spring",
+        "nature"
+      ]
+    },
+    {
+      "id": "liangzhouci-wanghan",
+      "title": "凉州词",
+      "dynasty": "唐",
+      "author": "王翰",
+      "lines": [
+        "葡萄美酒夜光杯，欲饮琵琶马上催。",
+        "醉卧沙场君莫笑，古来征战几人回？"
+      ],
+      "categories": [
+        "tang",
+        "frontier"
+      ],
+      "difficulty": 4,
+      "gradeBand": "四年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 21,
+      "lineCount": 2,
+      "pinyin": [
+        "pú táo měi jiǔ yè guāng bēi， yù yǐn pí pa mǎ shàng cuī。",
+        "zuì wò shā chǎng jūn mò xiào， gǔ lái zhēng zhàn jǐ rén huí？"
+      ],
+      "searchableText": "凉州词  王翰 唐 葡萄美酒夜光杯，欲饮琵琶马上催。醉卧沙场君莫笑，古来征战几人回？",
+      "tags": [
+        "tang",
+        "frontier"
+      ]
+    },
+    {
+      "id": "chusai",
+      "title": "出塞",
+      "dynasty": "唐",
+      "author": "王昌龄",
+      "lines": [
+        "秦时明月汉时关，万里长征人未还。",
+        "但使龙城飞将在，不教胡马度阴山。"
+      ],
+      "categories": [
+        "tang",
+        "frontier",
+        "moon"
+      ],
+      "difficulty": 4,
+      "gradeBand": "四年级",
+      "source": "public-domain-curated",
+      "order": 22,
+      "lineCount": 2,
+      "pinyin": [
+        "qín shí míng yuè hàn shí guān， wàn lǐ cháng zhēng rén wèi hái。",
+        "dàn shǐ lóng chéng fēi jiāng zài， bú jiào hú mǎ dù yīn shān。"
+      ],
+      "searchableText": "出塞  王昌龄 唐 秦时明月汉时关，万里长征人未还。但使龙城飞将在，不教胡马度阴山。",
+      "tags": [
+        "tang",
+        "frontier",
+        "moon"
+      ]
+    },
+    {
+      "id": "youziyin",
+      "title": "游子吟",
+      "dynasty": "唐",
+      "author": "孟郊",
+      "lines": [
+        "慈母手中线，游子身上衣。",
+        "临行密密缝，意恐迟迟归。",
+        "谁言寸草心，报得三春晖。"
+      ],
+      "categories": [
+        "tang",
+        "family"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 23,
+      "lineCount": 3,
+      "pinyin": [
+        "cí mǔ shǒu zhōng xiàn， yóu zǐ shēn shàng yī。",
+        "lín xíng mì mì fèng， yì kǒng chí chí guī。",
+        "shuí yán cùn cǎo xīn， bào dé sān chūn huī。"
+      ],
+      "searchableText": "游子吟  孟郊 唐 慈母手中线，游子身上衣。临行密密缝，意恐迟迟归。谁言寸草心，报得三春晖。",
+      "tags": [
+        "tang",
+        "family"
+      ]
+    },
+    {
+      "id": "fudeguyuancaosongbie",
+      "title": "赋得古原草送别",
+      "dynasty": "唐",
+      "author": "白居易",
+      "lines": [
+        "离离原上草，一岁一枯荣。",
+        "野火烧不尽，春风吹又生。",
+        "远芳侵古道，晴翠接荒城。",
+        "又送王孙去，萋萋满别情。"
+      ],
+      "categories": [
+        "tang",
+        "spring",
+        "farewell"
+      ],
+      "difficulty": 4,
+      "gradeBand": "四年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 24,
+      "lineCount": 4,
+      "pinyin": [
+        "lí lí yuán shàng cǎo， yí suì yì kū róng。",
+        "yě huǒ shāo bú jìn， chūn fēng chuī yòu shēng。",
+        "yuǎn fāng qīn gǔ dào， qíng cuì jiē huāng chéng。",
+        "yòu sòng wáng sūn qù， qī qī mǎn bié qíng。"
+      ],
+      "searchableText": "赋得古原草送别  白居易 唐 离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。远芳侵古道，晴翠接荒城。又送王孙去，萋萋满别情。",
+      "tags": [
+        "tang",
+        "spring",
+        "farewell"
+      ]
+    },
+    {
+      "id": "huanghelousongmenghaoran",
+      "title": "黄鹤楼送孟浩然之广陵",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "故人西辞黄鹤楼，烟花三月下扬州。",
+        "孤帆远影碧空尽，唯见长江天际流。"
+      ],
+      "categories": [
+        "tang",
+        "spring",
+        "farewell"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "chinese-poetry/蒙学/tangshisanbaishou.json",
+      "order": 25,
+      "lineCount": 2,
+      "pinyin": [
+        "gù rén xī cí huáng hè lóu， yān huā sān yuè xià yáng zhōu。",
+        "gū fān yuǎn yǐng bì kōng jìn， wéi jiàn cháng jiāng tiān jì liú。"
+      ],
+      "searchableText": "黄鹤楼送孟浩然之广陵  李白 唐 故人西辞黄鹤楼，烟花三月下扬州。孤帆远影碧空尽，唯见长江天际流。",
+      "tags": [
+        "tang",
+        "spring",
+        "farewell"
+      ]
+    },
+    {
+      "id": "zengwanglun",
+      "title": "赠汪伦",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "李白乘舟将欲行，忽闻岸上踏歌声。",
+        "桃花潭水深千尺，不及汪伦送我情。"
+      ],
+      "categories": [
+        "tang",
+        "farewell",
+        "friendship"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 26,
+      "lineCount": 2,
+      "pinyin": [
+        "lǐ bái chéng zhōu jiāng yù xíng， hū wén àn shàng tà gē shēng。",
+        "táo huā tán shuǐ shēn qiān chǐ， bù jí wāng lún sòng wǒ qíng。"
+      ],
+      "searchableText": "赠汪伦  李白 唐 李白乘舟将欲行，忽闻岸上踏歌声。桃花潭水深千尺，不及汪伦送我情。",
+      "tags": [
+        "tang",
+        "farewell",
+        "friendship"
+      ]
+    },
+    {
+      "id": "yeshushansi",
+      "title": "夜宿山寺",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "危楼高百尺，手可摘星辰。",
+        "不敢高声语，恐惊天上人。"
+      ],
+      "categories": [
+        "tang",
+        "imagination",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 27,
+      "lineCount": 2,
+      "pinyin": [
+        "wēi lóu gāo bǎi chǐ， shǒu kě zhāi xīng chén。",
+        "bù gǎn gāo shēng yǔ， kǒng jīng tiān shàng rén。"
+      ],
+      "searchableText": "夜宿山寺  李白 唐 危楼高百尺，手可摘星辰。不敢高声语，恐惊天上人。",
+      "tags": [
+        "tang",
+        "imagination",
+        "starter"
+      ]
+    },
+    {
+      "id": "duzuojingtingshan",
+      "title": "独坐敬亭山",
+      "dynasty": "唐",
+      "author": "李白",
+      "lines": [
+        "众鸟高飞尽，孤云独去闲。",
+        "相看两不厌，只有敬亭山。"
+      ],
+      "categories": [
+        "tang",
+        "landscape"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 28,
+      "lineCount": 2,
+      "pinyin": [
+        "zhòng niǎo gāo fēi jìn， gū yún dú qù xián。",
+        "xiāng kàn liǎng bú yàn， zhǐ yǒu jìng tíng shān。"
+      ],
+      "searchableText": "独坐敬亭山  李白 唐 众鸟高飞尽，孤云独去闲。相看两不厌，只有敬亭山。",
+      "tags": [
+        "tang",
+        "landscape"
+      ]
+    },
+    {
+      "id": "jiangnan",
+      "title": "江南",
+      "dynasty": "汉",
+      "author": "汉乐府",
+      "lines": [
+        "江南可采莲，莲叶何田田。",
+        "鱼戏莲叶间。",
+        "鱼戏莲叶东，鱼戏莲叶西。",
+        "鱼戏莲叶南，鱼戏莲叶北。"
+      ],
+      "categories": [
+        "han",
+        "summer",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "幼小衔接",
+      "source": "public-domain-curated",
+      "order": 29,
+      "lineCount": 4,
+      "pinyin": [
+        "jiāng nán kě cǎi lián， lián yè hé tián tián。",
+        "yú xì lián yè jiān。",
+        "yú xì lián yè dōng， yú xì lián yè xī。",
+        "yú xì lián yè nán， yú xì lián yè běi。"
+      ],
+      "searchableText": "江南  汉乐府 汉 江南可采莲，莲叶何田田。鱼戏莲叶间。鱼戏莲叶东，鱼戏莲叶西。鱼戏莲叶南，鱼戏莲叶北。",
+      "tags": [
+        "han",
+        "summer",
+        "starter"
+      ]
+    },
+    {
+      "id": "chilege",
+      "title": "敕勒歌",
+      "dynasty": "南北朝",
+      "author": "北朝民歌",
+      "lines": [
+        "敕勒川，阴山下。",
+        "天似穹庐，笼盖四野。",
+        "天苍苍，野茫茫。",
+        "风吹草低见牛羊。"
+      ],
+      "categories": [
+        "folk",
+        "landscape",
+        "starter"
+      ],
+      "difficulty": 2,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 30,
+      "lineCount": 4,
+      "pinyin": [
+        "chì lè chuān， yīn shān xià。",
+        "tiān sì qióng lú， lóng gài sì yě。",
+        "tiān cāng cāng， yě máng máng。",
+        "fēng chuī cǎo dī jiàn niú yáng。"
+      ],
+      "searchableText": "敕勒歌  北朝民歌 南北朝 敕勒川，阴山下。天似穹庐，笼盖四野。天苍苍，野茫茫。风吹草低见牛羊。",
+      "tags": [
+        "folk",
+        "landscape",
+        "starter"
+      ]
+    },
+    {
+      "id": "meihua",
+      "title": "梅花",
+      "dynasty": "宋",
+      "author": "王安石",
+      "lines": [
+        "墙角数枝梅，凌寒独自开。",
+        "遥知不是雪，为有暗香来。"
+      ],
+      "categories": [
+        "song",
+        "winter",
+        "nature"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 31,
+      "lineCount": 2,
+      "pinyin": [
+        "qiáng jiǎo shù zhī méi， líng hán dú zì kāi。",
+        "yáo zhī bú shì xuě， wèi yǒu àn xiāng lái。"
+      ],
+      "searchableText": "梅花  王安石 宋 墙角数枝梅，凌寒独自开。遥知不是雪，为有暗香来。",
+      "tags": [
+        "song",
+        "winter",
+        "nature"
+      ]
+    },
+    {
+      "id": "suojian",
+      "title": "所见",
+      "dynasty": "清",
+      "author": "袁枚",
+      "lines": [
+        "牧童骑黄牛，歌声振林樾。",
+        "意欲捕鸣蝉，忽然闭口立。"
+      ],
+      "categories": [
+        "qing",
+        "summer",
+        "childhood",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 32,
+      "lineCount": 2,
+      "pinyin": [
+        "mù tóng qí huáng niú， gē shēng zhèn lín yuè。",
+        "yì yù bǔ míng chán， hū rán bì kǒu lì。"
+      ],
+      "searchableText": "所见  袁枚 清 牧童骑黄牛，歌声振林樾。意欲捕鸣蝉，忽然闭口立。",
+      "tags": [
+        "qing",
+        "summer",
+        "childhood",
+        "starter"
+      ]
+    },
+    {
+      "id": "cunju",
+      "title": "村居",
+      "dynasty": "清",
+      "author": "高鼎",
+      "lines": [
+        "草长莺飞二月天，拂堤杨柳醉春烟。",
+        "儿童散学归来早，忙趁东风放纸鸢。"
+      ],
+      "categories": [
+        "qing",
+        "spring",
+        "childhood"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 33,
+      "lineCount": 2,
+      "pinyin": [
+        "cǎo zhǎng yīng fēi èr yuè tiān， fú dī yáng liǔ zuì chūn yān。",
+        "ér tóng sàn xué guī lái zǎo， máng chèn dōng fēng fàng zhǐ yuān。"
+      ],
+      "searchableText": "村居  高鼎 清 草长莺飞二月天，拂堤杨柳醉春烟。儿童散学归来早，忙趁东风放纸鸢。",
+      "tags": [
+        "qing",
+        "spring",
+        "childhood"
+      ]
+    },
+    {
+      "id": "chishang",
+      "title": "池上",
+      "dynasty": "唐",
+      "author": "白居易",
+      "lines": [
+        "小娃撑小艇，偷采白莲回。",
+        "不解藏踪迹，浮萍一道开。"
+      ],
+      "categories": [
+        "tang",
+        "summer",
+        "childhood",
+        "starter"
+      ],
+      "difficulty": 1,
+      "gradeBand": "一年级",
+      "source": "public-domain-curated",
+      "order": 34,
+      "lineCount": 2,
+      "pinyin": [
+        "xiǎo wá chēng xiǎo tǐng， tōu cǎi bái lián huí。",
+        "bù jiě cáng zōng jì， fú píng yí dào kāi。"
+      ],
+      "searchableText": "池上  白居易 唐 小娃撑小艇，偷采白莲回。不解藏踪迹，浮萍一道开。",
+      "tags": [
+        "tang",
+        "summer",
+        "childhood",
+        "starter"
+      ]
+    },
+    {
+      "id": "suxinshixugongdian",
+      "title": "宿新市徐公店",
+      "dynasty": "宋",
+      "author": "杨万里",
+      "lines": [
+        "篱落疏疏一径深，树头新绿未成阴。",
+        "儿童急走追黄蝶，飞入菜花无处寻。"
+      ],
+      "categories": [
+        "song",
+        "spring",
+        "childhood"
+      ],
+      "difficulty": 2,
+      "gradeBand": "二年级",
+      "source": "public-domain-curated",
+      "order": 35,
+      "lineCount": 2,
+      "pinyin": [
+        "lí luò shū shū yí jìng shēn， shù tóu xīn lǜ wèi chéng yīn。",
+        "ér tóng jí zǒu zhuī huáng dié， fēi rù cài huā wú chù xún。"
+      ],
+      "searchableText": "宿新市徐公店  杨万里 宋 篱落疏疏一径深，树头新绿未成阴。儿童急走追黄蝶，飞入菜花无处寻。",
+      "tags": [
+        "song",
+        "spring",
+        "childhood"
+      ]
+    },
+    {
+      "id": "xiaochujingcisi",
+      "title": "晓出净慈寺送林子方",
+      "dynasty": "宋",
+      "author": "杨万里",
+      "lines": [
+        "毕竟西湖六月中，风光不与四时同。",
+        "接天莲叶无穷碧，映日荷花别样红。"
+      ],
+      "categories": [
+        "song",
+        "summer",
+        "landscape"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "public-domain-curated",
+      "order": 36,
+      "lineCount": 2,
+      "pinyin": [
+        "bì jìng xī hú liù yuè zhōng， fēng guāng bù yǔ sì shí tóng。",
+        "jiē tiān lián yè wú qióng bì， yìng rì hé huā bié yàng hóng。"
+      ],
+      "searchableText": "晓出净慈寺送林子方  杨万里 宋 毕竟西湖六月中，风光不与四时同。接天莲叶无穷碧，映日荷花别样红。",
+      "tags": [
+        "song",
+        "summer",
+        "landscape"
+      ]
+    },
+    {
+      "id": "yuanri",
+      "title": "元日",
+      "dynasty": "宋",
+      "author": "王安石",
+      "lines": [
+        "爆竹声中一岁除，春风送暖入屠苏。",
+        "千门万户曈曈日，总把新桃换旧符。"
+      ],
+      "categories": [
+        "song",
+        "spring",
+        "festival"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "public-domain-curated",
+      "order": 37,
+      "lineCount": 2,
+      "pinyin": [
+        "bào zhú shēng zhōng yí suì chú， chūn fēng sòng nuǎn rù tú sū。",
+        "qiān mén wàn hù tóng tóng rì， zǒng bǎ xīn táo huàn jiù fú。"
+      ],
+      "searchableText": "元日  王安石 宋 爆竹声中一岁除，春风送暖入屠苏。千门万户曈曈日，总把新桃换旧符。",
+      "tags": [
+        "song",
+        "spring",
+        "festival"
+      ]
+    },
+    {
+      "id": "bochuanguazhou",
+      "title": "泊船瓜洲",
+      "dynasty": "宋",
+      "author": "王安石",
+      "lines": [
+        "京口瓜洲一水间，钟山只隔数重山。",
+        "春风又绿江南岸，明月何时照我还。"
+      ],
+      "categories": [
+        "song",
+        "spring",
+        "moon",
+        "homesick"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "public-domain-curated",
+      "order": 38,
+      "lineCount": 2,
+      "pinyin": [
+        "jīng kǒu guā zhōu yì shuǐ jiān， zhōng shān zhī gé shù chóng shān。",
+        "chūn fēng yòu lǜ jiāng nán àn， míng yuè hé shí zhào wǒ hái。"
+      ],
+      "searchableText": "泊船瓜洲  王安石 宋 京口瓜洲一水间，钟山只隔数重山。春风又绿江南岸，明月何时照我还。",
+      "tags": [
+        "song",
+        "spring",
+        "moon",
+        "homesick"
+      ]
+    },
+    {
+      "id": "huichongchunjiangwanjing",
+      "title": "惠崇春江晚景",
+      "dynasty": "宋",
+      "author": "苏轼",
+      "lines": [
+        "竹外桃花三两枝，春江水暖鸭先知。",
+        "蒌蒿满地芦芽短，正是河豚欲上时。"
+      ],
+      "categories": [
+        "song",
+        "spring",
+        "nature"
+      ],
+      "difficulty": 3,
+      "gradeBand": "三年级",
+      "source": "public-domain-curated",
+      "order": 39,
+      "lineCount": 2,
+      "pinyin": [
+        "zhú wài táo huā sān liǎng zhī， chūn jiāng shuǐ nuǎn yā xiān zhī。",
+        "lóu hāo mǎn dì lú yá duǎn， zhèng shì hé tún yù shàng shí。"
+      ],
+      "searchableText": "惠崇春江晚景  苏轼 宋 竹外桃花三两枝，春江水暖鸭先知。蒌蒿满地芦芽短，正是河豚欲上时。",
+      "tags": [
+        "song",
+        "spring",
+        "nature"
+      ]
+    }
+  ]
+}
