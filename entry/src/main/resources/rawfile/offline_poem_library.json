@@ -219,7 +219,10 @@
         "moon",
         "homesick",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_jingyesi.m4a",
+      "audioSource": "bundled-recording"
     },
     {
       "id": "dengguanquelou",
@@ -251,7 +254,10 @@
         "landscape",
         "inspiration",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_dengguanquelou.m4a",
+      "audioSource": "bundled-recording"
     },
     {
       "id": "chunxiao",
@@ -283,7 +289,10 @@
         "spring",
         "nature",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_chunxiao.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "wanglushanpubu",
@@ -313,7 +322,10 @@
         "tang",
         "landscape",
         "imagination"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_wanglushanpubu.m4a",
+      "audioSource": "bundled-recording"
     },
     {
       "id": "yonge",
@@ -343,7 +355,10 @@
         "tang",
         "animal",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_yonge.m4a",
+      "audioSource": "bundled-recording"
     },
     {
       "id": "xiaochi",
@@ -375,7 +390,10 @@
         "summer",
         "nature",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_xiaochi.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "qingming",
@@ -405,7 +423,10 @@
         "tang",
         "season",
         "festival"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_qingming.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "shanxing",
@@ -435,7 +456,10 @@
         "tang",
         "autumn",
         "landscape"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_shanxing.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "fengqiaoyebo",
@@ -465,7 +489,10 @@
         "tang",
         "moon",
         "travel"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_fengqiaoyebo.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "minnong-2",
@@ -496,7 +523,10 @@
         "tang",
         "labor",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_minnong_2.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "jiangxue",
@@ -526,7 +556,10 @@
         "tang",
         "winter",
         "landscape"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_jiangxue.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "xunyinzhebuyu",
@@ -554,7 +587,10 @@
       "tags": [
         "tang",
         "landscape"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_xunyinzhebuyu.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "xiangsi",
@@ -584,7 +620,10 @@
         "tang",
         "spring",
         "emotion"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_xiangsi.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "luchai",
@@ -614,7 +653,10 @@
         "tang",
         "landscape",
         "nature"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_luchai.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "songyuanershianxi",
@@ -642,7 +684,10 @@
       "tags": [
         "tang",
         "farewell"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_songyuanershianxi.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "jiuyuejiuyirandongxiongdi",
@@ -672,7 +717,10 @@
         "tang",
         "festival",
         "homesick"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_jiuyuejiuyirandongxiongdi.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "zaofabaidicheng",
@@ -702,7 +750,10 @@
         "tang",
         "landscape",
         "travel"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_zaofabaidicheng.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "wangtianshan",
@@ -730,7 +781,10 @@
       "tags": [
         "tang",
         "landscape"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_wangtianshan.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "jueju-dufu",
@@ -760,7 +814,10 @@
         "tang",
         "spring",
         "nature"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_jueju_dufu.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "chunyexiyu",
@@ -790,7 +847,10 @@
         "tang",
         "spring",
         "nature"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_chunyexiyu.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "liangzhouci-wanghan",
@@ -818,7 +878,10 @@
       "tags": [
         "tang",
         "frontier"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_liangzhouci_wanghan.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "chusai",
@@ -848,7 +911,10 @@
         "tang",
         "frontier",
         "moon"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_chusai.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "youziyin",
@@ -878,7 +944,10 @@
       "tags": [
         "tang",
         "family"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_youziyin.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "fudeguyuancaosongbie",
@@ -912,7 +981,10 @@
         "tang",
         "spring",
         "farewell"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_fudeguyuancaosongbie.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "huanghelousongmenghaoran",
@@ -942,7 +1014,10 @@
         "tang",
         "spring",
         "farewell"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_huanghelousongmenghaoran.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "zengwanglun",
@@ -972,7 +1047,10 @@
         "tang",
         "farewell",
         "friendship"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_zengwanglun.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "yeshushansi",
@@ -1002,7 +1080,10 @@
         "tang",
         "imagination",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_yeshushansi.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "duzuojingtingshan",
@@ -1030,7 +1111,10 @@
       "tags": [
         "tang",
         "landscape"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_duzuojingtingshan.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "jiangnan",
@@ -1064,7 +1148,10 @@
         "han",
         "summer",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_jiangnan.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "chilege",
@@ -1098,7 +1185,10 @@
         "folk",
         "landscape",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_chilege.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "meihua",
@@ -1128,7 +1218,10 @@
         "song",
         "winter",
         "nature"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_meihua.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "suojian",
@@ -1160,7 +1253,10 @@
         "summer",
         "childhood",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_suojian.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "cunju",
@@ -1190,7 +1286,10 @@
         "qing",
         "spring",
         "childhood"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_cunju.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "chishang",
@@ -1222,7 +1321,10 @@
         "summer",
         "childhood",
         "starter"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_chishang.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "suxinshixugongdian",
@@ -1252,7 +1354,10 @@
         "song",
         "spring",
         "childhood"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_suxinshixugongdian.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "xiaochujingcisi",
@@ -1282,7 +1387,10 @@
         "song",
         "summer",
         "landscape"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_xiaochujingcisi.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "yuanri",
@@ -1312,7 +1420,10 @@
         "song",
         "spring",
         "festival"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_yuanri.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "bochuanguazhou",
@@ -1344,7 +1455,10 @@
         "spring",
         "moon",
         "homesick"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_bochuanguazhou.m4a",
+      "audioSource": "macos-tts-generated"
     },
     {
       "id": "huichongchunjiangwanjing",
@@ -1374,7 +1488,10 @@
         "song",
         "spring",
         "nature"
-      ]
+      ],
+      "audioAvailable": true,
+      "audioRawFile": "poem_huichongchunjiangwanjing.m4a",
+      "audioSource": "macos-tts-generated"
     }
   ]
 }

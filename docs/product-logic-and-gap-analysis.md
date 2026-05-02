@@ -1,13 +1,15 @@
 # PoemBud 产品逻辑与功能缺口梳理
 
+> 说明：本文档保留最初对 `output` 目标图和实施前代码的差距梳理，用作需求来源追踪。当前 MVP 已按“单机、无 AI、无运行时诗词网络接口”的方向收敛，执行口径以 `docs/offline-app-prd.md`、`docs/offline-app-development-tasks.md` 和 `docs/mvp-implementation-notes.md` 为准。
+
 ## 1. 梳理依据
 
 本次梳理基于两类资料：
 
 - 目标图：`output/imagegen/ancient-poetry-kids-app/` 下的 7 张页面图，包括首页、诗单、学诗、跟读、闯关、成长报告、个人中心。
-- 当前实现：`entry/src/main/ets/pages/Index.ets`、`entry/src/main/ets/model/PoemBudStore.ets`、音频与录音工具类、路由配置和资源文件。
+- 实施前实现：`entry/src/main/ets/pages/Index.ets`、`entry/src/main/ets/model/PoemBudStore.ets`、音频与录音工具类、路由配置和资源文件。
 
-当前工程已经具备一个单机版学习闭环雏形：诗词展示、范读播放、收藏、录音、模拟评分、补字闯关、成长数据和本地档案。但目标图呈现的是更完整的儿童古诗学习产品，需要补齐内容库、检索分类、AI 评测、关卡题库、勋章规则、家长中心和设置等二级能力。
+实施前工程已经具备一个单机版学习闭环雏形：诗词展示、范读播放、收藏、录音、模拟评分、补字闯关、成长数据和本地档案。后续 MVP 没有采用目标图中的评测服务方向，而是按单机版 PRD 替换为本地录音练习、动态闯关和本地成长记录。
 
 ## 2. 当前产品主逻辑
 

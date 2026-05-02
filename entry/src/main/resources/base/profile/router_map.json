@@ -24,6 +24,16 @@
       "name": "info",
       "pageSourceFile": "src/main/ets/pages/Index.ets",
       "buildFunction": "InfoRouteBuilder"
+    },
+    {
+      "name": "poemList",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "PoemListRouteBuilder"
+    },
+    {
+      "name": "settings",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "SettingsRouteBuilder"
     }
   ]
 }

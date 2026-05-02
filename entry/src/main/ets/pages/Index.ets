@@ -1,15 +1,28 @@
 import { common } from '@kit.AbilityKit';
 import {
+  getOfflineCategoryById,
+  getOfflinePoemById,
+  getOfflinePoemsByCategory,
+  getRecommendedPoems,
+  OFFLINE_POEM_CATEGORIES,
+  OFFLINE_POEMS,
+  OfflinePoem,
+  searchOfflinePoems
+} from '../data/OfflinePoemLibrary';
+import {
   advanceChallengeLevel,
   completeChallenge,
   createDefaultPoemBudData,
+  DailyStudyRecord,
   openPoemLearning,
   PoemBudData,
   PoemBudStore,
   recordPoemListening,
   recordReadingResult,
+  resetLocalStudyData,
   signInLocalProfile,
-  toggleFavoritePoem
+  toggleFavoritePoem,
+  updateSettings
 } from '../model/PoemBudStore';
 import { PoemAudioPlayer } from '../utils/PoemAudioPlayer';
 import { PoemRecorder } from '../utils/PoemRecorder';
@@ -41,6 +54,7 @@ interface PoemContentModel {
 }
 
 interface CategoryModel {
+  id: string;
   title: string;
   count: string;
   symbol: string;
@@ -97,6 +111,18 @@ class InfoRouteParam {
   }
 }
 
+class PoemListRouteParam {
+  title: string = '';
+  categoryId: string = '';
+  query: string = '';
+
+  constructor(title: string, categoryId: string, query: string = '') {
+    this.title = title;
+    this.categoryId = categoryId;
+    this.query = query;
+  }
+}
+
 function openNavDestination(stack: NavPathStack, name: string, param: Object): void {
   stack.pushPath({ name, param });
 }
@@ -127,104 +153,111 @@ class Palette {
 }
 
 const FEATURED_POEM: PoemCardModel = {
-  id: 'jingyesi',
-  title: '静夜思',
-  author: '李白',
-  symbol: '月',
-  accent: Palette.blue
+  id: 'chunxiao',
+  title: '春晓',
+  author: '孟浩然',
+  symbol: '春',
+  accent: Palette.green
 };
 
-const POEM_CONTENTS: PoemContentModel[] = [
-  {
-    id: 'jingyesi',
-    title: '静夜思',
-    author: '李白',
-    dynasty: '唐',
-    lead: '月夜思乡，是孩子最容易共情的一首启蒙古诗。',
-    lines: ['床前明月光，', '疑是地上霜。', '举头望明月，', '低头思故乡。'],
-    pinyin: ['chuang qian ming yue guang', 'yi shi di shang shuang', 'ju tou wang ming yue', 'di tou si gu xiang'],
-    explains: [
-      { title: '床前明月光', meaning: '月光洒在床前，显得格外明亮。', symbol: '1' },
-      { title: '疑是地上霜', meaning: '好像地上铺了一层白霜。', symbol: '2' },
-      { title: '举头望明月', meaning: '抬头看着天上的明月。', symbol: '3' },
-      { title: '低头思故乡', meaning: '低头时就想起了远方的家乡。', symbol: '4' }
-    ]
-  },
-  {
-    id: 'dengguanquelou',
-    title: '登鹳雀楼',
-    author: '王之涣',
-    dynasty: '唐',
-    lead: '视野不断向上，孩子能读出“更上一层楼”的进取心。',
-    lines: ['白日依山尽，', '黄河入海流。', '欲穷千里目，', '更上一层楼。'],
-    pinyin: ['bai ri yi shan jin', 'huang he ru hai liu', 'yu qiong qian li mu', 'geng shang yi ceng lou'],
-    explains: [
-      { title: '白日依山尽', meaning: '夕阳贴着山边慢慢落下。', symbol: '1' },
-      { title: '黄河入海流', meaning: '黄河奔流不息，汇入大海。', symbol: '2' },
-      { title: '欲穷千里目', meaning: '如果想看得更远。', symbol: '3' },
-      { title: '更上一层楼', meaning: '就要再登上一层高楼。', symbol: '4' }
-    ]
-  },
-  {
-    id: 'wanglushanpubu',
-    title: '望庐山瀑布',
-    author: '李白',
-    dynasty: '唐',
-    lead: '山与水的气势很强，适合训练朗读的节奏和停顿。',
-    lines: ['日照香炉生紫烟，', '遥看瀑布挂前川。', '飞流直下三千尺，', '疑是银河落九天。'],
-    pinyin: ['ri zhao xiang lu sheng zi yan', 'yao kan pu bu gua qian chuan', 'fei liu zhi xia san qian chi', 'yi shi yin he luo jiu tian'],
-    explains: [
-      { title: '日照香炉生紫烟', meaning: '阳光照着香炉峰，升起紫色云烟。', symbol: '1' },
-      { title: '遥看瀑布挂前川', meaning: '远远望去，瀑布像挂在山前。', symbol: '2' },
-      { title: '飞流直下三千尺', meaning: '瀑布飞快地直泻而下。', symbol: '3' },
-      { title: '疑是银河落九天', meaning: '好像银河从天上落下来一样。', symbol: '4' }
-    ]
-  },
-  {
-    id: 'yonge',
-    title: '咏鹅',
-    author: '骆宾王',
-    dynasty: '唐',
-    lead: '画面轻快，特别适合低龄孩子建立古诗兴趣。',
-    lines: ['鹅鹅鹅，', '曲项向天歌。', '白毛浮绿水，', '红掌拨清波。'],
-    pinyin: ['e e e', 'qu xiang xiang tian ge', 'bai mao fu lv shui', 'hong zhang bo qing bo'],
-    explains: [
-      { title: '鹅鹅鹅', meaning: '小鹅一边叫着，一边出场。', symbol: '1' },
-      { title: '曲项向天歌', meaning: '弯着脖子朝天鸣叫。', symbol: '2' },
-      { title: '白毛浮绿水', meaning: '白色羽毛漂在绿色的水面上。', symbol: '3' },
-      { title: '红掌拨清波', meaning: '红色脚掌拨开清清的水波。', symbol: '4' }
-    ]
+function makePoemSymbol(title: string): string {
+  return title.length > 0 ? title.substring(0, 1) : '诗';
+}
+
+function getPoemAccent(poem: OfflinePoem): string {
+  if (poem.categories.includes('spring')) {
+    return Palette.green;
   }
-];
-const POEM_SEQUENCE: string[] = ['jingyesi', 'dengguanquelou', 'wanglushanpubu', 'yonge'];
-const HOME_BANNER_POEM_IDS: string[] = ['jingyesi', 'dengguanquelou', 'wanglushanpubu'];
+  if (poem.categories.includes('moon')) {
+    return Palette.blue;
+  }
+  if (poem.categories.includes('summer')) {
+    return Palette.peach;
+  }
+  if (poem.categories.includes('landscape')) {
+    return Palette.orange;
+  }
+  return Palette.gold;
+}
 
-const POPULAR_POEMS: PoemCardModel[] = [
-  { id: 'jingyesi', title: '静夜思', author: '李白', symbol: '月', accent: Palette.blue },
-  { id: 'dengguanquelou', title: '登鹳雀楼', author: '王之涣', symbol: '楼', accent: Palette.orange },
-  { id: 'wanglushanpubu', title: '望庐山瀑布', author: '李白', symbol: '瀑', accent: Palette.green },
-  { id: 'yonge', title: '咏鹅', author: '骆宾王', symbol: '鹅', accent: Palette.peach }
-];
+function getPoemLead(poem: OfflinePoem): string {
+  if (poem.categories.includes('starter')) {
+    return '启蒙必背短诗，适合每天听一听、读一读。';
+  }
+  if (poem.categories.includes('spring')) {
+    return '春景清新明亮，适合孩子感受四时变化。';
+  }
+  if (poem.categories.includes('moon')) {
+    return '明月意象鲜明，适合练习想象和情感表达。';
+  }
+  if (poem.categories.includes('landscape')) {
+    return '山水画面开阔，适合训练朗读的节奏。';
+  }
+  return '读熟诗句，再试着说出诗里的画面。';
+}
 
-const FAVORITE_POEMS: PoemCardModel[] = [
-  { id: 'jingyesi', title: '静夜思', author: '李白', symbol: '月', accent: Palette.blue },
-  { id: 'dengguanquelou', title: '登鹳雀楼', author: '王之涣', symbol: '楼', accent: Palette.orange },
-  { id: 'chunxiao', title: '春晓', author: '孟浩然', symbol: '春', accent: Palette.green },
-  { id: 'wanglushanpubu', title: '望庐山瀑布', author: '李白', symbol: '瀑', accent: Palette.blue }
-];
+function buildExplainCards(poem: OfflinePoem): PoemLineExplainModel[] {
+  return poem.lines.map((line: string, index: number): PoemLineExplainModel => {
+    return {
+      title: line,
+      meaning: `先读熟这一句，再找一找诗里的关键词：${line.replace(/[，。！？；：、]/g, ' ')}`,
+      symbol: `${index + 1}`
+    };
+  });
+}
 
+function offlinePoemToCard(poem: OfflinePoem): PoemCardModel {
+  return {
+    id: poem.id,
+    title: poem.title,
+    author: poem.author,
+    symbol: makePoemSymbol(poem.title),
+    accent: getPoemAccent(poem),
+    note: poem.gradeBand
+  };
+}
+
+function offlinePoemToContent(poem: OfflinePoem): PoemContentModel {
+  return {
+    id: poem.id,
+    title: poem.title,
+    author: poem.author,
+    dynasty: poem.dynasty,
+    lead: getPoemLead(poem),
+    lines: poem.lines,
+    pinyin: poem.pinyin,
+    explains: buildExplainCards(poem)
+  };
+}
+
+function categoryToModel(categoryId: string, symbol: string, accent: string): CategoryModel {
+  const category = getOfflineCategoryById(categoryId) ?? OFFLINE_POEM_CATEGORIES[0];
+  return {
+    id: category.id,
+    title: category.name,
+    count: `${category.poemCount}首诗`,
+    symbol,
+    accent
+  };
+}
+
+const POEM_CONTENTS: PoemContentModel[] = OFFLINE_POEMS.map((poem: OfflinePoem) => offlinePoemToContent(poem));
+const POEM_SEQUENCE: string[] = OFFLINE_POEMS.map((poem: OfflinePoem) => poem.id);
+const HOME_BANNER_POEM_IDS: string[] = ['chunxiao', 'jingyesi', 'dengguanquelou'];
+const POPULAR_POEMS: PoemCardModel[] = getRecommendedPoems().slice(0, 4).map((poem: OfflinePoem) => offlinePoemToCard(poem));
+const FAVORITE_POEMS: PoemCardModel[] = POPULAR_POEMS;
 const CATEGORIES: CategoryModel[] = [
-  { title: '唐诗', count: '24首诗', symbol: '唐', accent: Palette.green },
-  { title: '咏月诗', count: '16首诗', symbol: '月', accent: Palette.blue },
-  { title: '春天的诗', count: '18首诗', symbol: '春', accent: Palette.peach },
-  { title: '山水田园', count: '20首诗', symbol: '山', accent: Palette.gold }
+  categoryToModel('tang', '唐', Palette.green),
+  categoryToModel('moon', '月', Palette.blue),
+  categoryToModel('spring', '春', Palette.peach),
+  categoryToModel('landscape', '山', Palette.gold)
 ];
 
 const RECENT_STUDIES: RecentStudyModel[] = [
-  { title: '静夜思', author: '李白', daysAgo: '今天学习', progress: 4, accent: Palette.green, symbol: '月' },
-  { title: '登鹳雀楼', author: '王之涣', daysAgo: '昨天学习', progress: 3, accent: Palette.blue, symbol: '楼' },
-  { title: '望庐山瀑布', author: '李白', daysAgo: '2天前学习', progress: 3, accent: Palette.orange, symbol: '瀑' },
-  { title: '咏鹅', author: '骆宾王', daysAgo: '3天前学习', progress: 2, accent: Palette.peach, symbol: '鹅' }
+  { title: '小池', author: '杨万里', daysAgo: '今天学习', progress: 4, accent: Palette.green, symbol: '池' },
+  { title: '清明', author: '杜牧', daysAgo: '昨天学习', progress: 3, accent: Palette.blue, symbol: '清' },
+  { title: '山行', author: '杜牧', daysAgo: '2天前学习', progress: 3, accent: Palette.orange, symbol: '山' },
+  { title: '枫桥夜泊', author: '张继', daysAgo: '3天前学习', progress: 2, accent: Palette.peach, symbol: '枫' }
 ];
 
 const STUDY_MILESTONES: StudyMilestoneModel[] = [
@@ -271,12 +304,38 @@ const ACHIEVEMENTS: string[] = [
 
 const WAVE_BARS: number[] = [10, 18, 28, 42, 24, 18, 32, 48, 34, 16, 12, 26, 38, 22, 14];
 const GROWTH_VALUES: number[] = [10, 18, 26, 32, 36];
-const CHALLENGE_CHOICES: string[] = ['明', '夜', '月', '故'];
+function formatMonthDay(date: Date): string {
+  return `${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function getCurrentWeekRangeText(): string {
+  const now = new Date();
+  const day = now.getDay() === 0 ? 7 : now.getDay();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 7);
+  return `${formatMonthDay(start)} - ${formatMonthDay(end)}`;
+}
+
+function getGrowthValues(data: PoemBudData): number[] {
+  const records = data.dailyRecords.slice(-28);
+  if (records.length === 0) {
+    return GROWTH_VALUES;
+  }
+  const values: number[] = [];
+  for (let index = 0; index < 4; index += 1) {
+    const group = records.slice(index * 7, index * 7 + 7);
+    values.push(group.reduce((sum: number, item: DailyStudyRecord) => sum + item.openedPoemIds.length + item.readingCount + item.challengeCount, 0));
+  }
+  values.push(data.progress.learnedPoems);
+  return values.map((item: number) => Math.max(1, item));
+}
+
 function buildWeeklyMetricModels(data: PoemBudData): GrowthMetricModel[] {
   return [
     { label: '学习天数', value: `${data.progress.weeklyStudyDays}天`, symbol: '学' },
     { label: '学习古诗', value: `${data.progress.weeklyPoems}首`, symbol: '诗' },
     { label: '跟读练习', value: `${data.progress.weeklyReadingCount}次`, symbol: '读' },
+    { label: '闯关练习', value: `${data.progress.weeklyChallengeCount}次`, symbol: '关' },
     { label: '获得星星', value: `${data.progress.weeklyStars}颗`, symbol: '星' }
   ];
 }
@@ -300,6 +359,16 @@ function getPoemThumbnail(poemId: string): Resource {
   if (poemId === 'yonge') {
     return $r('app.media.thumb_yonge');
   }
+  const poem = getOfflinePoemById(poemId);
+  if (poem.categories.includes('spring') || poem.categories.includes('summer')) {
+    return $r('app.media.thumb_yonge');
+  }
+  if (poem.categories.includes('landscape')) {
+    return $r('app.media.thumb_wanglushanpubu');
+  }
+  if (poem.categories.includes('moon')) {
+    return $r('app.media.thumb_jingyesi');
+  }
   return $r('app.media.thumb_jingyesi');
 }
 
@@ -313,6 +382,16 @@ function getPoemBanner(poemId: string): Resource {
   if (poemId === 'yonge') {
     return $r('app.media.banner_yonge');
   }
+  const poem = getOfflinePoemById(poemId);
+  if (poem.categories.includes('spring') || poem.categories.includes('summer')) {
+    return $r('app.media.banner_yonge');
+  }
+  if (poem.categories.includes('landscape')) {
+    return $r('app.media.banner_wanglushanpubu');
+  }
+  if (poem.categories.includes('moon')) {
+    return $r('app.media.banner_jingyesi');
+  }
   return $r('app.media.banner_jingyesi');
 }
 
@@ -321,25 +400,12 @@ function getPoemMiniCardIcon(poemId: string): Resource {
 }
 
 function getPoemIdByTitle(title: string): string {
-  if (title === '登鹳雀楼') {
-    return 'dengguanquelou';
-  }
-  if (title === '望庐山瀑布') {
-    return 'wanglushanpubu';
-  }
-  if (title === '咏鹅') {
-    return 'yonge';
-  }
-  if (title === '静夜思') {
-    return 'jingyesi';
-  }
-  return 'jingyesi';
+  const found = OFFLINE_POEMS.find((item: OfflinePoem) => item.title === title);
+  return found?.id ?? FEATURED_POEM.id;
 }
 
 function getPoemCard(poemId: string): PoemCardModel {
-  const found = POPULAR_POEMS.find((item: PoemCardModel) => item.id === poemId) ??
-    FAVORITE_POEMS.find((item: PoemCardModel) => item.id === poemId);
-  return found ?? POPULAR_POEMS[0];
+  return offlinePoemToCard(getOfflinePoemById(poemId));
 }
 
 function getNextPoemId(poemId: string): string {
@@ -394,16 +460,12 @@ function getActionIcon(routeName: string): Resource {
 }
 
 function getPoemAudioRawFile(poemId: string): string {
-  if (poemId === 'dengguanquelou') {
-    return 'poem_dengguanquelou.wav';
-  }
-  if (poemId === 'wanglushanpubu') {
-    return 'poem_wanglushanpubu.wav';
-  }
-  if (poemId === 'yonge') {
-    return 'poem_yonge.wav';
-  }
-  return 'poem_jingyesi.wav';
+  return getOfflinePoemById(poemId).audioRawFile;
+}
+
+function hasPoemAudio(poemId: string): boolean {
+  const poem = getOfflinePoemById(poemId);
+  return poem.audioAvailable && poem.audioRawFile.length > 0;
 }
 
 function getActivePoemAudioStatus(rawPath: string, playbackRawPath: string, playbackStatus: string): string {
@@ -509,68 +571,70 @@ interface ChallengeQuestionModel {
   choices: string[];
 }
 
-function getChallengeQuestion(poemId: string): ChallengeQuestionModel {
-  if (poemId === 'dengguanquelou') {
-    return {
-      poemId: 'dengguanquelou',
-      title: '登鹳雀楼',
-      author: '王之涣',
-      prompt: '把两个字放回诗句里。',
-      prefixA: '白日依山',
-      suffixA: '，',
-      answerA: '尽',
-      middleLine: '黄河入海流。',
-      prefixB: '更上一层',
-      suffixB: '。',
-      answerB: '楼',
-      choices: ['尽', '楼', '海', '河']
-    };
+interface BlankLineModel {
+  prefix: string;
+  answer: string;
+  suffix: string;
+}
+
+function getChineseCharIndexes(line: string): number[] {
+  const indexes: number[] = [];
+  const chars = line.split('');
+  chars.forEach((char: string, index: number) => {
+    if (/[\u4e00-\u9fa5]/.test(char)) {
+      indexes.push(index);
+    }
+  });
+  return indexes;
+}
+
+function makeBlankLine(line: string, rank: number): BlankLineModel {
+  const indexes = getChineseCharIndexes(line);
+  if (indexes.length === 0) {
+    return { prefix: line, answer: '', suffix: '' };
   }
-  if (poemId === 'wanglushanpubu') {
-    return {
-      poemId: 'wanglushanpubu',
-      title: '望庐山瀑布',
-      author: '李白',
-      prompt: '把正确的字补回诗句里。',
-      prefixA: '飞流直下',
-      suffixA: '千尺，',
-      answerA: '三',
-      middleLine: '疑是银河落九天。',
-      prefixB: '疑是银河落',
-      suffixB: '天。',
-      answerB: '九',
-      choices: ['三', '九', '尺', '天']
-    };
-  }
-  if (poemId === 'yonge') {
-    return {
-      poemId: 'yonge',
-      title: '咏鹅',
-      author: '骆宾王',
-      prompt: '选择两个字，补完整首小诗。',
-      prefixA: '白毛浮',
-      suffixA: '水，',
-      answerA: '绿',
-      middleLine: '曲项向天歌。',
-      prefixB: '红掌拨',
-      suffixB: '波。',
-      answerB: '清',
-      choices: ['绿', '清', '红', '白']
-    };
-  }
+  const target = indexes[Math.min(Math.max(rank, 0), indexes.length - 1)];
   return {
-    poemId: 'jingyesi',
-    title: '静夜思',
-    author: '李白',
+    prefix: line.substring(0, target),
+    answer: line.substring(target, target + 1),
+    suffix: line.substring(target + 1)
+  };
+}
+
+function buildChallengeChoices(poem: OfflinePoem, answerA: string, answerB: string): string[] {
+  const choices: string[] = [answerA, answerB];
+  poem.lines.join('').split('').forEach((char: string) => {
+    if (/[\u4e00-\u9fa5]/.test(char) && !choices.includes(char) && choices.length < 4) {
+      choices.push(char);
+    }
+  });
+  ['诗', '山', '月', '春'].forEach((char: string) => {
+    if (!choices.includes(char) && choices.length < 4) {
+      choices.push(char);
+    }
+  });
+  return choices;
+}
+
+function getChallengeQuestion(poemId: string): ChallengeQuestionModel {
+  const poem = getOfflinePoemById(poemId);
+  const lineA = poem.lines[0];
+  const lineB = poem.lines.length > 1 ? poem.lines[poem.lines.length - 1] : poem.lines[0];
+  const blankA = makeBlankLine(lineA, 2);
+  const blankB = makeBlankLine(lineB, Math.max(0, getChineseCharIndexes(lineB).length - 2));
+  return {
+    poemId: poem.id,
+    title: poem.title,
+    author: poem.author,
     prompt: '把正确的字放回诗句里。',
-    prefixA: '床前',
-    suffixA: '月光，',
-    answerA: '明',
-    middleLine: '疑是地上霜。',
-    prefixB: '低头思',
-    suffixB: '乡。',
-    answerB: '故',
-    choices: ['明', '故', '夜', '月']
+    prefixA: blankA.prefix,
+    suffixA: blankA.suffix,
+    answerA: blankA.answer,
+    middleLine: poem.lines.length > 2 ? poem.lines[1] : getPoemLead(poem),
+    prefixB: blankB.prefix,
+    suffixB: blankB.suffix,
+    answerB: blankB.answer,
+    choices: buildChallengeChoices(poem, blankA.answer, blankB.answer)
   };
 }
 
@@ -934,7 +998,7 @@ struct CategoryCard {
     .border({ width: 1, color: Palette.border })
     .alignItems(HorizontalAlign.Start)
     .onClick(() => {
-      openNavDestination(this.stack, 'info', new InfoRouteParam(this.item.title, this.item.count, `当前版本已准备好 ${this.item.title} 的入口，后续可继续补充筛选列表和专题诗单。`));
+      openNavDestination(this.stack, 'poemList', new PoemListRouteParam(this.item.title, this.item.id));
     });
   }
 }
@@ -1012,6 +1076,68 @@ struct RecentStudyRow {
     .border({ width: 1, color: Palette.border })
     .onClick(() => {
       openNavDestination(this.stack, 'poem', new PoemRouteParam(getPoemIdByTitle(this.item.title)));
+    });
+  }
+}
+
+@Component
+struct PoemListRow {
+  poem: OfflinePoem = OFFLINE_POEMS[0];
+  stack: NavPathStack = new NavPathStack();
+
+  build() {
+    Row({ space: 14 }) {
+      Image(getPoemMiniCardIcon(this.poem.id))
+        .width(66)
+        .height(66)
+        .borderRadius(18)
+        .objectFit(ImageFit.Cover);
+
+      Column({ space: 6 }) {
+        Text(this.poem.title)
+          .fontSize(19)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Palette.ink);
+
+        Text(`[${this.poem.dynasty}] ${this.poem.author} · ${this.poem.gradeBand}`)
+          .fontSize(12)
+          .fontColor(Palette.muted)
+          .maxLines(1);
+
+        Text(this.poem.lines[0])
+          .fontSize(12)
+          .fontColor(Palette.muted)
+          .maxLines(1);
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start);
+
+      Column({ space: 6 }) {
+        Text(hasPoemAudio(this.poem.id) ? '有范读' : '仅诗文')
+          .fontSize(11)
+          .fontColor(hasPoemAudio(this.poem.id) ? Palette.green : Palette.muted);
+
+        Row() {
+          Text('学')
+            .fontSize(14)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(Palette.white);
+        }
+        .width(38)
+        .height(38)
+        .borderRadius(19)
+        .backgroundColor(Palette.green)
+        .justifyContent(FlexAlign.Center);
+      }
+      .alignItems(HorizontalAlign.End);
+    }
+    .width('100%')
+    .padding(14)
+    .borderRadius(22)
+    .backgroundColor(Palette.card)
+    .border({ width: 1, color: Palette.border })
+    .onClick(() => {
+      openNavDestination(this.stack, 'poem', new PoemRouteParam(this.poem.id));
     });
   }
 }
@@ -1137,7 +1263,7 @@ struct GrowthMetricCard {
         .fontWeight(FontWeight.Bold)
         .fontColor(Palette.ink);
     }
-    .width('24%')
+    .width('19%')
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center);
   }
@@ -1150,7 +1276,7 @@ struct ServiceRow {
   symbol: string = '';
   stack: NavPathStack = new NavPathStack();
   routeName: string = '';
-  routeParam: InfoRouteParam = new InfoRouteParam('', '', '');
+  routeParam: Object = new InfoRouteParam('', '', '');
 
   build() {
     Row({ space: 12 }) {
@@ -1256,6 +1382,9 @@ struct HomePage {
 
   private async playFeaturedPoem(): Promise<void> {
     const poemId = getCurrentPoemId(this.data);
+    if (!hasPoemAudio(poemId) || !this.data.settings.soundEnabled) {
+      return;
+    }
     const rawPath = this.featuredPoemAudioRawPath();
     const playbackStatus = this.featuredPoemPlaybackStatus();
     console.info(`[PoemBud] toggle featured poem from home poemId=${poemId} status=${playbackStatus}`);
@@ -1699,6 +1828,11 @@ struct HomePage {
 struct CollectionPage {
   stack: NavPathStack = new NavPathStack();
   @Link data: PoemBudData;
+  @State searchKeyword: string = '';
+
+  private searchResults(): OfflinePoem[] {
+    return searchOfflinePoems(this.searchKeyword).slice(0, 12);
+  }
 
   build() {
     Scroll() {
@@ -1728,10 +1862,53 @@ struct CollectionPage {
               .width(40)
               .height(40)
               .borderRadius(20)
-              .objectFit(ImageFit.Cover);
+              .objectFit(ImageFit.Cover)
+              .onClick(() => {
+                openNavDestination(this.stack, 'poemList', new PoemListRouteParam('全部诗词', '', ''));
+              });
           }
         }
         .width('100%');
+
+        TextInput({ placeholder: '搜索诗名、作者或诗句', text: this.searchKeyword })
+          .width('100%')
+          .height(48)
+          .padding({ left: 16, right: 16 })
+          .borderRadius(24)
+          .backgroundColor(Palette.card)
+          .border({ width: 1, color: Palette.border })
+          .fontSize(15)
+          .fontColor(Palette.ink)
+          .placeholderColor(Palette.muted)
+          .onChange((value: string) => {
+            this.searchKeyword = value;
+          });
+
+        if (this.searchKeyword.trim().length > 0) {
+          Column({ space: 12 }) {
+            Row() {
+              Text(`搜索结果 ${this.searchResults().length}`)
+                .fontSize(20)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Palette.ink);
+
+              Blank();
+
+              Text('清空')
+                .fontSize(13)
+                .fontColor(Palette.green)
+                .onClick(() => {
+                  this.searchKeyword = '';
+                });
+            }
+            .width('100%');
+
+            ForEach(this.searchResults(), (poem: OfflinePoem) => {
+              PoemListRow({ poem: poem, stack: this.stack });
+            }, (poem: OfflinePoem) => poem.id);
+          }
+          .width('100%');
+        }
 
         Row({ space: 12 }) {
           Column({ space: 10 }) {
@@ -1845,6 +2022,10 @@ struct StudyPage {
   }
 
   private async playPoemAudio(): Promise<void> {
+    if (!hasPoemAudio(this.poemId) || !this.data.settings.soundEnabled) {
+      return;
+    }
+
     const playbackStatus = this.poemPlaybackStatus();
     if (playbackStatus === 'loading') {
       return;
@@ -1865,6 +2046,16 @@ struct StudyPage {
 
   private async toggleFavorite(): Promise<void> {
     const next = toggleFavoritePoem(this.data, this.poemId);
+    this.data = next;
+    await PoemBudStore.save(next);
+  }
+
+  private async togglePinyin(): Promise<void> {
+    const next = updateSettings(this.data, {
+      showPinyin: !this.data.settings.showPinyin,
+      soundEnabled: this.data.settings.soundEnabled,
+      fontScale: this.data.settings.fontScale
+    });
     this.data = next;
     await PoemBudStore.save(next);
   }
@@ -1920,7 +2111,7 @@ struct StudyPage {
             });
 
             Row() {
-              Text('更多')
+              Text('赏析')
                 .fontSize(12)
                 .fontColor(Palette.green);
             }
@@ -1928,7 +2119,7 @@ struct StudyPage {
             .borderRadius(18)
             .backgroundColor(Palette.greenSoft)
             .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('更多练习', this.currentPoem().title, this.currentPoem().lead));
+              openNavDestination(this.stack, 'info', new InfoRouteParam('诗词赏析', this.currentPoem().title, this.currentPoem().lead));
             });
           }
 
@@ -1939,41 +2130,23 @@ struct StudyPage {
             .objectFit(ImageFit.Cover);
 
           Column({ space: 14 }) {
-            Text(this.currentPoem().pinyin[0])
-              .fontSize(14)
-              .fontColor(Palette.green);
+            ForEach(this.currentPoem().lines, (line: string, index: number) => {
+              Column({ space: 6 }) {
+                if (this.data.settings.showPinyin) {
+                  Text(this.currentPoem().pinyin[index] ?? '')
+                    .fontSize(14 * this.data.settings.fontScale)
+                    .fontColor(Palette.green);
+                }
 
-            Text(this.currentPoem().lines[0])
-              .fontSize(32)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Palette.ink);
-
-            Text(this.currentPoem().pinyin[1])
-              .fontSize(14)
-              .fontColor(Palette.green);
-
-            Text(this.currentPoem().lines[1])
-              .fontSize(32)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Palette.ink);
-
-            Text(this.currentPoem().pinyin[2])
-              .fontSize(14)
-              .fontColor(Palette.green);
-
-            Text(this.currentPoem().lines[2])
-              .fontSize(32)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Palette.ink);
-
-            Text(this.currentPoem().pinyin[3])
-              .fontSize(14)
-              .fontColor(Palette.green);
-
-            Text(this.currentPoem().lines[3])
-              .fontSize(32)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Palette.ink);
+                Text(line)
+                  .fontSize(29 * this.data.settings.fontScale)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(Palette.ink)
+                  .lineHeight(40 * this.data.settings.fontScale);
+              }
+              .width('100%')
+              .alignItems(HorizontalAlign.Center);
+            }, (line: string, index: number) => `${line}-${index}`);
           }
           .width('100%')
           .padding(18)
@@ -1983,13 +2156,16 @@ struct StudyPage {
           Row({ space: 12 }) {
             Row({ space: 8 }) {
               MonogramBadge({ symbol: '拼', accent: Palette.green, badgeSize: 36, fontSize: 14 });
-              Text('拼音')
+              Text(this.data.settings.showPinyin ? '隐藏拼音' : '显示拼音')
                 .fontSize(15)
                 .fontColor(Palette.ink);
             }
             .padding({ left: 14, right: 14, top: 10, bottom: 10 })
             .borderRadius(22)
-            .backgroundColor(Palette.greenSoft);
+            .backgroundColor(Palette.greenSoft)
+            .onClick(() => {
+              this.togglePinyin();
+            });
 
             Blank();
 
@@ -1998,13 +2174,13 @@ struct StudyPage {
                 .fontSize(14)
                 .fontColor(Palette.white)
                 .fontWeight(FontWeight.Bold);
-              Text(getPoemAudioButtonLabel(this.poemPlaybackStatus(), '范读'))
+              Text(hasPoemAudio(this.poemId) ? getPoemAudioButtonLabel(this.poemPlaybackStatus(), '范读') : '暂无音频')
                 .fontSize(15)
                 .fontColor(Palette.white);
             }
             .padding({ left: 18, right: 18, top: 10, bottom: 10 })
             .borderRadius(22)
-            .backgroundColor(getPoemAudioButtonColor(this.poemPlaybackStatus()))
+            .backgroundColor(hasPoemAudio(this.poemId) ? getPoemAudioButtonColor(this.poemPlaybackStatus()) : '#9AA79E')
             .onClick(() => {
               this.playPoemAudio();
             });
@@ -2038,7 +2214,7 @@ struct StudyPage {
           });
           ActionCard({
             title: '跟读练习',
-            subtitle: '字词清晰度即时反馈',
+            subtitle: '录下朗读，保存练习记录',
             symbol: '读',
             accent: Palette.green,
             stack: this.stack,
@@ -2113,7 +2289,7 @@ struct GrowthPage {
         .backgroundColor(Palette.card)
         .border({ width: 1, color: Palette.border });
 
-        SectionHeader({ title: '本周学习情况', subtitle: '5月12日 - 5月18日' });
+        SectionHeader({ title: '本周学习情况', subtitle: getCurrentWeekRangeText() });
 
         Row() {
           ForEach(buildWeeklyMetricModels(this.data), (item: GrowthMetricModel) => {
@@ -2139,7 +2315,7 @@ struct GrowthPage {
               .fontWeight(FontWeight.Bold)
               .fontColor(Palette.orange);
 
-            Text('超过了90%的小朋友')
+            Text('完成闯关即可计入掌握')
               .fontSize(12)
               .fontColor(Palette.muted);
 
@@ -2152,7 +2328,7 @@ struct GrowthPage {
             .borderRadius(16)
             .backgroundColor(Palette.greenSoft)
             .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('我的诗单', '当前版本已支持本地收藏与最近学习。', '返回底部“诗库”标签页即可查看。'));
+              openNavDestination(this.stack, 'poemList', new PoemListRouteParam('我的收藏', '', ''));
             });
           }
           .width('48%')
@@ -2202,18 +2378,18 @@ struct GrowthPage {
             .fontColor(Palette.ink);
 
           Row({ space: 10 }) {
-            ForEach(GROWTH_VALUES, (item: number, index: number) => {
+            ForEach(getGrowthValues(this.data), (item: number, index: number) => {
               Column({ space: 8 }) {
                 Text(`${item}`)
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor(index === GROWTH_VALUES.length - 1 ? Palette.orange : Palette.green);
+                  .fontColor(index === getGrowthValues(this.data).length - 1 ? Palette.orange : Palette.green);
 
                 Row()
                   .width(42)
-                  .height(item * 2)
+                  .height(Math.min(90, item * 2))
                   .borderRadius(20)
-                  .backgroundColor(index === GROWTH_VALUES.length - 1 ? Palette.orangeSoft : Palette.greenSoft);
+                  .backgroundColor(index === getGrowthValues(this.data).length - 1 ? Palette.orangeSoft : Palette.greenSoft);
 
                 Text(index === 0 ? '4周前' : index === 1 ? '3周前' : index === 2 ? '2周前' : index === 3 ? '1周前' : '本周')
                   .fontSize(10)
@@ -2541,23 +2717,23 @@ struct ProfilePage {
               symbol: '读',
               stack: this.stack,
               routeName: 'info',
-              routeParam: new InfoRouteParam('跟读记录', '最近一次朗读已保存在本机文件目录。', this.data.reading.lastRecordPath.length > 0 ? this.data.reading.lastRecordPath : '还没有录音记录，先去完成一次跟读练习。')
+              routeParam: new InfoRouteParam('跟读记录', `累计练习 ${this.data.reading.attempts} 次`, this.data.reading.lastRecordPath.length > 0 ? this.data.reading.lastRecordPath : '还没有录音记录，先去完成一次跟读练习。')
             });
             ServiceRow({
               title: '收藏管理',
               subtitle: '整理自己的诗单',
               symbol: '藏',
               stack: this.stack,
-              routeName: 'info',
-              routeParam: new InfoRouteParam('收藏管理', '当前版本先展示本地收藏状态。', `已收藏 ${this.data.collection.favoritePoemIds.length} 首诗。`)
+              routeName: 'poemList',
+              routeParam: new PoemListRouteParam('我的收藏', '', '')
             });
             ServiceRow({
               title: '设置',
               subtitle: '通知与字体大小',
               symbol: '设',
               stack: this.stack,
-              routeName: 'info',
-              routeParam: new InfoRouteParam('设置', '当前为单机版配置页。', '后续可以继续扩展字体大小、家长模式和通知提醒。')
+              routeName: 'settings',
+              routeParam: new InfoRouteParam('', '', '')
             });
           }
           .width('58%')
@@ -2684,12 +2860,197 @@ struct InfoPage {
 }
 
 @Component
+struct PoemListPage {
+  stack: NavPathStack = new NavPathStack();
+  @StorageLink('poemBudData') data: PoemBudData = createDefaultPoemBudData();
+  title: string = '全部诗词';
+  categoryId: string = '';
+  query: string = '';
+
+  private poems(): OfflinePoem[] {
+    if (this.title === '我的收藏') {
+      return this.data.collection.favoritePoemIds.map((poemId: string) => getOfflinePoemById(poemId));
+    }
+    if (this.query.trim().length > 0) {
+      return searchOfflinePoems(this.query);
+    }
+    if (this.categoryId.length > 0) {
+      return getOfflinePoemsByCategory(this.categoryId);
+    }
+    return OFFLINE_POEMS;
+  }
+
+  build() {
+    Scroll() {
+      Column({ space: 16 }) {
+        DetailTopBar({ title: this.title.length > 0 ? this.title : '全部诗词', trailing: `${this.poems().length}首`, stack: this.stack });
+
+        ForEach(this.poems(), (poem: OfflinePoem) => {
+          PoemListRow({ poem: poem, stack: this.stack });
+        }, (poem: OfflinePoem) => poem.id);
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 20, bottom: 20 })
+      .backgroundColor(Palette.paper);
+    }
+    .scrollBar(BarState.Off)
+    .width('100%')
+    .height('100%')
+    .backgroundColor(Palette.paper);
+  }
+}
+
+@Component
+struct SettingsPage {
+  @StorageLink('poemBudData') data: PoemBudData = createDefaultPoemBudData();
+  stack: NavPathStack = new NavPathStack();
+
+  private async togglePinyin(): Promise<void> {
+    const next = updateSettings(this.data, {
+      showPinyin: !this.data.settings.showPinyin,
+      soundEnabled: this.data.settings.soundEnabled,
+      fontScale: this.data.settings.fontScale
+    });
+    this.data = next;
+    await PoemBudStore.save(next);
+  }
+
+  private async toggleSound(): Promise<void> {
+    const next = updateSettings(this.data, {
+      showPinyin: this.data.settings.showPinyin,
+      soundEnabled: !this.data.settings.soundEnabled,
+      fontScale: this.data.settings.fontScale
+    });
+    this.data = next;
+    await PoemBudStore.save(next);
+  }
+
+  private async setFontScale(value: number): Promise<void> {
+    const next = updateSettings(this.data, {
+      showPinyin: this.data.settings.showPinyin,
+      soundEnabled: this.data.settings.soundEnabled,
+      fontScale: value
+    });
+    this.data = next;
+    await PoemBudStore.save(next);
+  }
+
+  private async resetData(): Promise<void> {
+    const next = resetLocalStudyData(this.data);
+    this.data = next;
+    await PoemBudStore.save(next);
+  }
+
+  build() {
+    Column({ space: 18 }) {
+      DetailTopBar({ title: '设置', trailing: '本地', stack: this.stack });
+
+      Column({ space: 14 }) {
+        Row({ space: 12 }) {
+          MonogramBadge({ symbol: '拼', accent: Palette.greenSoft, badgeSize: 36, fontSize: 14 });
+          Column({ space: 4 }) {
+            Text('默认显示拼音')
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(Palette.ink);
+            Text(this.data.settings.showPinyin ? '已开启' : '已关闭')
+              .fontSize(11)
+              .fontColor(Palette.muted);
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Start);
+          Text(this.data.settings.showPinyin ? '开' : '关')
+            .fontSize(13)
+            .fontColor(Palette.green);
+        }
+        .width('100%')
+        .padding({ top: 10, bottom: 10 })
+        .onClick(() => {
+            this.togglePinyin();
+        });
+
+        Row({ space: 12 }) {
+          MonogramBadge({ symbol: '声', accent: Palette.greenSoft, badgeSize: 36, fontSize: 14 });
+          Column({ space: 4 }) {
+            Text('声音播放')
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(Palette.ink);
+            Text(this.data.settings.soundEnabled ? '已开启' : '已关闭')
+              .fontSize(11)
+              .fontColor(Palette.muted);
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Start);
+          Text(this.data.settings.soundEnabled ? '开' : '关')
+            .fontSize(13)
+            .fontColor(Palette.green);
+        }
+        .width('100%')
+        .padding({ top: 10, bottom: 10 })
+        .onClick(() => {
+            this.toggleSound();
+        });
+
+        Row({ space: 10 }) {
+          Text('字号')
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(Palette.ink);
+          Blank();
+          ForEach([0.9, 1, 1.12], (item: number) => {
+            Row() {
+              Text(item === 0.9 ? '小' : item === 1 ? '中' : '大')
+                .fontSize(13)
+                .fontColor(this.data.settings.fontScale === item ? Palette.white : Palette.green);
+            }
+            .width(42)
+            .height(34)
+            .borderRadius(17)
+            .backgroundColor(this.data.settings.fontScale === item ? Palette.green : Palette.greenSoft)
+            .justifyContent(FlexAlign.Center)
+            .onClick(() => {
+              this.setFontScale(item);
+            });
+          }, (item: number) => `${item}`);
+        }
+        .width('100%')
+        .padding({ top: 10, bottom: 10 });
+
+        Row() {
+          Text('清空本地学习数据')
+            .fontSize(16)
+            .fontColor(Palette.red);
+        }
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .onClick(() => {
+          this.resetData();
+        });
+      }
+      .width('100%')
+      .padding(18)
+      .borderRadius(28)
+      .backgroundColor(Palette.card)
+      .border({ width: 1, color: Palette.border });
+    }
+    .width('100%')
+    .height('100%')
+    .padding({ left: 20, right: 20, top: 20, bottom: 20 })
+    .backgroundColor(Palette.paper)
+    .alignItems(HorizontalAlign.Start);
+  }
+}
+
+@Component
 struct ReadingPracticePage {
   stack: NavPathStack = new NavPathStack();
   @Link data: PoemBudData;
   poemId: string = FEATURED_POEM.id;
   @State hasResult: boolean = false;
   @State isReading: boolean = false;
+  @State currentLineIndex: number = 0;
+  @State recordingStartedAt: number = 0;
   @StorageLink('poemAudioPlaybackStatus') audioPlaybackStatus: string = 'idle';
   @StorageLink('poemAudioPlaybackRawPath') audioPlaybackRawPath: string = '';
   private recorder: PoemRecorder = new PoemRecorder();
@@ -2699,8 +3060,24 @@ struct ReadingPracticePage {
   }
 
   aboutToAppear(): void {
-    this.hasResult = this.data.reading.lastScore > 0;
+    this.hasResult = this.data.reading.attemptHistory.length > 0;
     console.info(`[PoemBud] reading page appear poemId=${this.poemId} hasResult=${this.hasResult}`);
+  }
+
+  private currentLineText(): string {
+    return this.currentPoem().lines[this.currentLineIndex] ?? this.currentPoem().lines[0];
+  }
+
+  private currentLinePinyin(): string {
+    return this.currentPoem().pinyin[this.currentLineIndex] ?? '';
+  }
+
+  private lastAttemptText(): string {
+    const last = this.data.reading.attemptHistory[0];
+    if (!last) {
+      return '完成一次录音即可保存练习记录。';
+    }
+    return `最近练习：${last.durationSeconds}秒，获得${last.rewardStars}颗星星`;
   }
 
   private poemAudioRawPath(): string {
@@ -2712,6 +3089,10 @@ struct ReadingPracticePage {
   }
 
   private async playPoemAudio(): Promise<void> {
+    if (!hasPoemAudio(this.poemId) || !this.data.settings.soundEnabled) {
+      return;
+    }
+
     const playbackStatus = this.poemPlaybackStatus();
     if (playbackStatus === 'loading') {
       return;
@@ -2730,12 +3111,25 @@ struct ReadingPracticePage {
     }
   }
 
+  private async playLastRecord(): Promise<void> {
+    if (this.data.reading.lastRecordPath.length === 0) {
+      return;
+    }
+
+    try {
+      await PoemAudioPlayer.playUri(`file://${this.data.reading.lastRecordPath}`);
+    } catch (err) {
+      console.error(`Failed to replay reading record: ${JSON.stringify(err)}`);
+    }
+  }
+
   private async toggleRecording(): Promise<void> {
     try {
       if (this.isReading) {
         const recordPath = await this.recorder.stop();
         this.isReading = false;
-        const next = recordReadingResult(this.data, this.poemId, 92, recordPath);
+        const durationSeconds = Math.max(1, Math.round((new Date().getTime() - this.recordingStartedAt) / 1000));
+        const next = recordReadingResult(this.data, this.poemId, 0, recordPath, this.currentLineIndex, this.currentLineText(), durationSeconds);
         this.data = next;
         this.hasResult = true;
         await PoemBudStore.save(next);
@@ -2744,11 +3138,25 @@ struct ReadingPracticePage {
 
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
       await this.recorder.start(context);
+      this.recordingStartedAt = new Date().getTime();
       this.isReading = true;
     } catch (err) {
       this.isReading = false;
       console.error(`Failed to toggle recording: ${JSON.stringify(err)}`);
     }
+  }
+
+  private switchLine(delta: number): void {
+    const nextIndex = this.currentLineIndex + delta;
+    if (nextIndex < 0) {
+      this.currentLineIndex = this.currentPoem().lines.length - 1;
+      return;
+    }
+    if (nextIndex >= this.currentPoem().lines.length) {
+      this.currentLineIndex = 0;
+      return;
+    }
+    this.currentLineIndex = nextIndex;
   }
 
   build() {
@@ -2761,11 +3169,11 @@ struct ReadingPracticePage {
               .fontSize(14)
               .fontColor(Palette.green);
 
-            Text(this.currentPoem().pinyin[2])
+            Text(this.currentLinePinyin())
               .fontSize(14)
               .fontColor(Palette.green);
 
-            Text(this.currentPoem().lines[2])
+            Text(this.currentLineText())
               .fontSize(34)
               .fontWeight(FontWeight.Bold)
               .fontColor(Palette.ink);
@@ -2779,16 +3187,34 @@ struct ReadingPracticePage {
                 .fontSize(13)
                 .fontColor(Palette.white)
                 .fontWeight(FontWeight.Bold);
-              Text(getPoemAudioButtonLabel(this.poemPlaybackStatus(), '播放范读'))
+              Text(hasPoemAudio(this.poemId) ? getPoemAudioButtonLabel(this.poemPlaybackStatus(), '播放范读') : '暂无范读')
                 .fontSize(13)
                 .fontColor(Palette.white);
             }
             .padding({ left: 14, right: 14, top: 8, bottom: 8 })
             .borderRadius(18)
-            .backgroundColor(getPoemAudioButtonColor(this.poemPlaybackStatus()))
+            .backgroundColor(hasPoemAudio(this.poemId) ? getPoemAudioButtonColor(this.poemPlaybackStatus()) : '#9AA79E')
             .onClick(() => {
               this.playPoemAudio();
             });
+
+            Row({ space: 10 }) {
+              Text('上一句')
+                .fontSize(13)
+                .fontColor(Palette.green)
+                .onClick(() => {
+                  this.switchLine(-1);
+                });
+              Text(`${this.currentLineIndex + 1}/${this.currentPoem().lines.length}`)
+                .fontSize(12)
+                .fontColor(Palette.muted);
+              Text('下一句')
+                .fontSize(13)
+                .fontColor(Palette.green)
+                .onClick(() => {
+                  this.switchLine(1);
+                });
+            }
           }
           .width('100%')
           .padding(20)
@@ -2810,12 +3236,12 @@ struct ReadingPracticePage {
                 .fontWeight(FontWeight.Bold)
                 .fontColor(Palette.ink);
 
-              Text(this.hasResult ? '声音洪亮，吐字清晰。' : '点击下方按钮，系统会录下你的朗读。')
+              Text(this.hasResult ? this.lastAttemptText() : '点击下方按钮，系统会录下你的朗读。')
                 .fontSize(13)
                 .fontColor(Palette.muted);
 
               Row({ space: 8 }) {
-                Text(this.hasResult ? '⭐ ⭐ ⭐ ⭐' : '跟读前先深呼吸一下')
+                Text(this.hasResult ? '⭐ 已保存本地练习记录' : '跟读前先深呼吸一下')
                   .fontSize(14)
                   .fontColor(this.hasResult ? Palette.gold : Palette.green);
               }
@@ -2830,7 +3256,7 @@ struct ReadingPracticePage {
           .border({ width: 1, color: Palette.border });
 
           Column({ space: 18 }) {
-            Text(this.isReading ? '正在录音，请朗读诗句…' : '朗读声纹')
+            Text(this.isReading ? '正在录音，请朗读诗句…' : '本地录音波形')
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
               .fontColor(Palette.ink);
@@ -2881,17 +3307,17 @@ struct ReadingPracticePage {
 
           Row({ space: 12 }) {
             Column({ space: 8 }) {
-              Text('朗读评分')
+              Text('练习完成')
                 .fontSize(16)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
 
-              Text(this.hasResult ? `${this.data.reading.lastScore > 0 ? this.data.reading.lastScore : this.data.reading.bestScore}分` : '--')
-                .fontSize(38)
+              Text(this.hasResult ? `${this.data.reading.attempts}次` : '--')
+                .fontSize(36)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(Palette.orange);
 
-              Text('太棒了！')
+              Text('本地保存')
                 .fontSize(12)
                 .fontColor(Palette.orange);
             }
@@ -2902,32 +3328,27 @@ struct ReadingPracticePage {
             .alignItems(HorizontalAlign.Start);
 
             Column({ space: 12 }) {
-              Text('字词发音准确度')
+              Text('本句练习记录')
                 .fontSize(16)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
 
-              Row({ space: 10 }) {
-                ForEach(['举', '头', '望', '明', '月'], (item: string, index: number) => {
-                  Column({ space: 6 }) {
-                    Row() {
-                      Text(item)
-                        .fontSize(18)
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor(index === 2 ? Palette.orange : Palette.green);
-                    }
-                    .width(34)
-                    .height(34)
-                    .borderRadius(17)
-                    .backgroundColor(index === 2 ? Palette.orangeSoft : Palette.greenSoft)
-                    .justifyContent(FlexAlign.Center);
+              Text(this.hasResult ? this.lastAttemptText() : '先完成一次录音，系统会记录练习次数和星星奖励。')
+                .fontSize(13)
+                .lineHeight(22)
+                .fontColor(Palette.muted);
 
-                    Text(index === 2 ? '良好' : '优秀')
-                      .fontSize(10)
-                      .fontColor(index === 2 ? Palette.orange : Palette.green);
-                  }
-                }, (item: string) => item);
+              Row() {
+                Text('播放最近录音')
+                  .fontSize(13)
+                  .fontColor(this.data.reading.lastRecordPath.length > 0 ? Palette.green : Palette.muted);
               }
+              .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+              .borderRadius(18)
+              .backgroundColor(Palette.greenSoft)
+              .onClick(() => {
+                this.playLastRecord();
+              });
             }
             .width('62%')
             .padding(18)
@@ -2949,7 +3370,7 @@ struct ReadingPracticePage {
               .fontSize(22)
               .fontColor(Palette.gold);
 
-            Text('再得 1 颗星，解锁新的诗句卡片！')
+            Text('星星由录音完成度和练习时长计算，全部保存在本机。')
               .fontSize(13)
               .fontColor(Palette.muted);
           }
@@ -3016,7 +3437,7 @@ struct ChallengePage {
   }
 
   private async persistChallengeSuccess(): Promise<void> {
-    if (this.isSuccess() && this.data.challenge.lastCompletedTime === 0) {
+    if (this.isSuccess()) {
       const next = completeChallenge(this.data, this.poemId);
       this.data = next;
       await PoemBudStore.save(next);
@@ -3053,6 +3474,11 @@ struct ChallengePage {
             .backgroundColor(Palette.card);
 
             Blank();
+
+            Text(`⭐ ${this.data.progress.totalStars}`)
+              .fontSize(14)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Palette.orange);
 
             ForEach([1, 2, 3, 4, 5], (item: number) => {
               Row() {
@@ -3194,7 +3620,7 @@ struct ChallengePage {
 
               Row({ space: 12 }) {
                 Row() {
-                  Text('下一关')
+                  Text(this.data.challenge.currentLevel >= 5 ? '已完成' : '下一关')
                     .fontSize(16)
                     .fontWeight(FontWeight.Bold)
                     .fontColor(Palette.white);
@@ -3203,7 +3629,9 @@ struct ChallengePage {
                 .borderRadius(20)
                 .backgroundColor(Palette.green)
                 .onClick(() => {
-                  this.goNextLevel();
+                  if (this.data.challenge.currentLevel < 5) {
+                    this.goNextLevel();
+                  }
                 });
 
                 Row() {
@@ -3400,6 +3828,39 @@ struct InfoRouteEntry {
   }
 }
 
+@Component
+struct PoemListRouteEntry {
+  title: string = '全部诗词';
+  categoryId: string = '';
+  query: string = '';
+  @State stack: NavPathStack = new NavPathStack();
+
+  build() {
+    NavDestination() {
+      PoemListPage({ stack: this.stack, title: this.title, categoryId: this.categoryId, query: this.query });
+    }
+    .hideTitleBar(true)
+    .onReady((context: NavDestinationContext) => {
+      this.stack = context.pathStack;
+    });
+  }
+}
+
+@Component
+struct SettingsRouteEntry {
+  @State stack: NavPathStack = new NavPathStack();
+
+  build() {
+    NavDestination() {
+      SettingsPage({ stack: this.stack });
+    }
+    .hideTitleBar(true)
+    .onReady((context: NavDestinationContext) => {
+      this.stack = context.pathStack;
+    });
+  }
+}
+
 @Builder
 function PoemRouteBuilder(_name?: string, param?: Object) {
   PoemRouteEntry({ poemId: (param as PoemRouteParam)?.poemId ?? FEATURED_POEM.id });
@@ -3427,4 +3888,18 @@ function InfoRouteBuilder(_name?: string, param?: Object) {
     subtitle: (param as InfoRouteParam)?.subtitle ?? '',
     content: (param as InfoRouteParam)?.content ?? ''
   });
+}
+
+@Builder
+function PoemListRouteBuilder(_name?: string, param?: Object) {
+  PoemListRouteEntry({
+    title: (param as PoemListRouteParam)?.title ?? '全部诗词',
+    categoryId: (param as PoemListRouteParam)?.categoryId ?? '',
+    query: (param as PoemListRouteParam)?.query ?? ''
+  });
+}
+
+@Builder
+function SettingsRouteBuilder(_name?: string, _param?: Object) {
+  SettingsRouteEntry();
 }

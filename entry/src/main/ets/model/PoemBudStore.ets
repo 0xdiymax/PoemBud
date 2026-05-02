@@ -2,7 +2,8 @@ import { PreferencesManager } from '../utils/PreferencesManager';
 
 const STORE_NAME = 'poem_bud_preferences';
 const DATA_KEY = 'poem_bud_data';
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
+const MAX_CHALLENGE_LEVEL = 5;
 
 export interface ProfileData {
   loggedIn: boolean;
@@ -24,7 +25,18 @@ export interface ProgressData {
   weeklyStudyDays: number;
   weeklyPoems: number;
   weeklyReadingCount: number;
+  weeklyChallengeCount: number;
   weeklyStars: number;
+}
+
+export interface ReadingAttemptData {
+  poemId: string;
+  lineIndex: number;
+  lineText: string;
+  recordPath: string;
+  durationSeconds: number;
+  rewardStars: number;
+  createdAt: number;
 }
 
 export interface ReadingData {
@@ -33,6 +45,7 @@ export interface ReadingData {
   lastScore: number;
   lastRecordPath: string;
   lastRecordTime: number;
+  attemptHistory: ReadingAttemptData[];
 }
 
 export interface ChallengeData {
@@ -54,6 +67,33 @@ export interface CollectionData {
   recentPoemIds: string[];
 }
 
+export interface DailyStudyRecord {
+  date: string;
+  studyMinutes: number;
+  openedPoemIds: string[];
+  listenedPoemIds: string[];
+  readingCount: number;
+  challengeCount: number;
+  stars: number;
+}
+
+export interface PoemLearningProgress {
+  poemId: string;
+  openedCount: number;
+  listenedCount: number;
+  readExplanation: boolean;
+  readingCount: number;
+  challengePassedCount: number;
+  mastered: boolean;
+  lastStudyTime: number;
+}
+
+export interface SettingsData {
+  showPinyin: boolean;
+  soundEnabled: boolean;
+  fontScale: number;
+}
+
 export interface PoemBudData {
   schemaVersion: number;
   profile: ProfileData;
@@ -62,12 +102,116 @@ export interface PoemBudData {
   challenge: ChallengeData;
   study: StudyData;
   collection: CollectionData;
+  dailyRecords: DailyStudyRecord[];
+  poemProgressRecords: PoemLearningProgress[];
+  settings: SettingsData;
   achievements: string[];
 }
 
 function updateWeeklyGoalPercent(data: PoemBudData): void {
-  const score = data.progress.weeklyStudyDays * 25 + data.progress.weeklyPoems * 20 + data.progress.weeklyReadingCount * 5;
+  const score = data.progress.weeklyStudyDays * 20 + data.progress.weeklyPoems * 18 +
+    data.progress.weeklyReadingCount * 5 + data.progress.weeklyChallengeCount * 6;
   data.progress.weeklyGoalPercent = Math.min(100, score);
+}
+
+function pad2(value: number): string {
+  return value < 10 ? `0${value}` : `${value}`;
+}
+
+function getDateKey(date: Date = new Date()): string {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function getOrCreateTodayRecord(data: PoemBudData): DailyStudyRecord {
+  const today = getDateKey();
+  const found = data.dailyRecords.find((item: DailyStudyRecord) => item.date === today);
+  if (found) {
+    return found;
+  }
+
+  const record: DailyStudyRecord = {
+    date: today,
+    studyMinutes: 0,
+    openedPoemIds: [],
+    listenedPoemIds: [],
+    readingCount: 0,
+    challengeCount: 0,
+    stars: 0
+  };
+  data.dailyRecords.push(record);
+  data.dailyRecords = data.dailyRecords.slice(-120);
+  return record;
+}
+
+function addUnique(items: string[], value: string): string[] {
+  if (items.includes(value)) {
+    return items;
+  }
+  const next = items.slice();
+  next.push(value);
+  return next;
+}
+
+function getOrCreatePoemProgress(data: PoemBudData, poemId: string): PoemLearningProgress {
+  const found = data.poemProgressRecords.find((item: PoemLearningProgress) => item.poemId === poemId);
+  if (found) {
+    return found;
+  }
+
+  const record: PoemLearningProgress = {
+    poemId,
+    openedCount: 0,
+    listenedCount: 0,
+    readExplanation: false,
+    readingCount: 0,
+    challengePassedCount: 0,
+    mastered: false,
+    lastStudyTime: 0
+  };
+  data.poemProgressRecords.push(record);
+  return record;
+}
+
+function updateProfileLevel(data: PoemBudData): void {
+  const exp = data.progress.totalStars * 10 + data.progress.learnedPoems * 15 + data.progress.masteredPoems * 25;
+  data.profile.level = data.profile.loggedIn ? Math.max(1, Math.floor(exp / 120) + 1) : data.profile.level;
+  data.profile.expPercent = Math.min(100, exp % 120 / 120 * 100);
+  if (data.profile.loggedIn) {
+    data.profile.title = data.progress.masteredPoems >= 10 ? '诗词小达人' : '诗词初学者';
+  }
+}
+
+function refreshProgressFromRecords(data: PoemBudData): void {
+  data.progress.learnedPoems = data.study.learnedPoemIds.length;
+  data.progress.masteredPoems = data.poemProgressRecords.filter((item: PoemLearningProgress) => item.mastered).length;
+  data.progress.totalStudyDays = data.dailyRecords.filter((item: DailyStudyRecord) => item.studyMinutes > 0 ||
+    item.openedPoemIds.length > 0 || item.readingCount > 0 || item.challengeCount > 0).length;
+  data.progress.weeklyStudyDays = Math.min(7, data.dailyRecords.slice(-7).filter((item: DailyStudyRecord) => item.studyMinutes > 0 ||
+    item.openedPoemIds.length > 0 || item.readingCount > 0 || item.challengeCount > 0).length);
+  data.progress.weeklyPoems = data.dailyRecords.slice(-7)
+    .reduce((acc: string[], item: DailyStudyRecord) => {
+      item.openedPoemIds.forEach((poemId: string) => {
+        if (!acc.includes(poemId)) {
+          acc.push(poemId);
+        }
+      });
+      return acc;
+    }, []).length;
+  data.progress.weeklyReadingCount = data.dailyRecords.slice(-7)
+    .reduce((sum: number, item: DailyStudyRecord) => sum + item.readingCount, 0);
+  data.progress.weeklyChallengeCount = data.dailyRecords.slice(-7)
+    .reduce((sum: number, item: DailyStudyRecord) => sum + item.challengeCount, 0);
+  data.progress.weeklyStars = data.dailyRecords.slice(-7)
+    .reduce((sum: number, item: DailyStudyRecord) => sum + item.stars, 0);
+  data.progress.streakDays = Math.max(data.progress.streakDays, data.progress.weeklyStudyDays);
+  updateWeeklyGoalPercent(data);
+  updateProfileLevel(data);
+}
+
+function prependAchievement(data: PoemBudData, message: string): void {
+  const nextAchievements = data.achievements.slice();
+  nextAchievements.unshift(message);
+  data.achievements = nextAchievements.slice(0, 3);
 }
 
 export function createDefaultPoemBudData(): PoemBudData {
@@ -92,6 +236,7 @@ export function createDefaultPoemBudData(): PoemBudData {
       weeklyStudyDays: 0,
       weeklyPoems: 0,
       weeklyReadingCount: 0,
+      weeklyChallengeCount: 0,
       weeklyStars: 0
     },
     reading: {
@@ -99,7 +244,8 @@ export function createDefaultPoemBudData(): PoemBudData {
       bestScore: 0,
       lastScore: 0,
       lastRecordPath: '',
-      lastRecordTime: 0
+      lastRecordTime: 0,
+      attemptHistory: []
     },
     challenge: {
       currentLevel: 1,
@@ -116,6 +262,13 @@ export function createDefaultPoemBudData(): PoemBudData {
     collection: {
       favoritePoemIds: [],
       recentPoemIds: []
+    },
+    dailyRecords: [],
+    poemProgressRecords: [],
+    settings: {
+      showPinyin: true,
+      soundEnabled: true,
+      fontScale: 1
     },
     achievements: []
   };
@@ -146,6 +299,7 @@ function normalizePoemBudData(data: PoemBudData): PoemBudData {
   normalized.progress.weeklyStudyDays = data.progress?.weeklyStudyDays ?? defaults.progress.weeklyStudyDays;
   normalized.progress.weeklyPoems = data.progress?.weeklyPoems ?? defaults.progress.weeklyPoems;
   normalized.progress.weeklyReadingCount = data.progress?.weeklyReadingCount ?? defaults.progress.weeklyReadingCount;
+  normalized.progress.weeklyChallengeCount = data.progress?.weeklyChallengeCount ?? defaults.progress.weeklyChallengeCount;
   normalized.progress.weeklyStars = data.progress?.weeklyStars ?? defaults.progress.weeklyStars;
 
   normalized.reading.attempts = data.reading?.attempts ?? defaults.reading.attempts;
@@ -153,6 +307,7 @@ function normalizePoemBudData(data: PoemBudData): PoemBudData {
   normalized.reading.lastScore = data.reading?.lastScore ?? defaults.reading.lastScore;
   normalized.reading.lastRecordPath = data.reading?.lastRecordPath ?? defaults.reading.lastRecordPath;
   normalized.reading.lastRecordTime = data.reading?.lastRecordTime ?? defaults.reading.lastRecordTime;
+  normalized.reading.attemptHistory = Array.isArray(data.reading?.attemptHistory) ? data.reading.attemptHistory.slice(0, 80) : defaults.reading.attemptHistory;
 
   normalized.challenge.currentLevel = data.challenge?.currentLevel ?? defaults.challenge.currentLevel;
   normalized.challenge.passedLevels = data.challenge?.passedLevels ?? defaults.challenge.passedLevels;
@@ -166,7 +321,13 @@ function normalizePoemBudData(data: PoemBudData): PoemBudData {
 
   normalized.collection.favoritePoemIds = Array.isArray(data.collection?.favoritePoemIds) ? data.collection.favoritePoemIds : defaults.collection.favoritePoemIds;
   normalized.collection.recentPoemIds = Array.isArray(data.collection?.recentPoemIds) ? data.collection.recentPoemIds : defaults.collection.recentPoemIds;
+  normalized.dailyRecords = Array.isArray(data.dailyRecords) ? data.dailyRecords.slice(-120) : defaults.dailyRecords;
+  normalized.poemProgressRecords = Array.isArray(data.poemProgressRecords) ? data.poemProgressRecords : defaults.poemProgressRecords;
+  normalized.settings.showPinyin = data.settings?.showPinyin ?? defaults.settings.showPinyin;
+  normalized.settings.soundEnabled = data.settings?.soundEnabled ?? defaults.settings.soundEnabled;
+  normalized.settings.fontScale = data.settings?.fontScale ?? defaults.settings.fontScale;
   normalized.achievements = Array.isArray(data.achievements) ? data.achievements.slice(0, 3) : [];
+  refreshProgressFromRecords(normalized);
   return normalized;
 }
 
@@ -175,6 +336,7 @@ export function buildWeeklyMetrics(data: PoemBudData): GrowthMetricModel[] {
     { label: '学习天数', value: `${data.progress.weeklyStudyDays}天`, symbol: '学' },
     { label: '学习古诗', value: `${data.progress.weeklyPoems}首`, symbol: '诗' },
     { label: '跟读练习', value: `${data.progress.weeklyReadingCount}次`, symbol: '读' },
+    { label: '闯关练习', value: `${data.progress.weeklyChallengeCount}次`, symbol: '关' },
     { label: '获得星星', value: `${data.progress.weeklyStars}颗`, symbol: '星' }
   ];
 }
@@ -190,6 +352,11 @@ function markRecentPoem(data: PoemBudData, poemId: string): void {
   filtered.unshift(poemId);
   data.collection.recentPoemIds = filtered.slice(0, 6);
   data.study.currentPoemId = poemId;
+  const today = getOrCreateTodayRecord(data);
+  today.openedPoemIds = addUnique(today.openedPoemIds, poemId);
+  const progress = getOrCreatePoemProgress(data, poemId);
+  progress.openedCount += 1;
+  progress.lastStudyTime = new Date().getTime();
 }
 
 function markLearnedPoem(data: PoemBudData, poemId: string): void {
@@ -211,16 +378,28 @@ export function recordPoemListening(data: PoemBudData, poemId: string): PoemBudD
     next.study.listenedPoemIds = listenedIds;
   }
   next.progress.todayMinutes += 1;
-  next.progress.weeklyStudyDays = Math.max(next.progress.weeklyStudyDays, 1);
-  next.progress.totalStudyDays = Math.max(next.progress.totalStudyDays, 1);
-  next.progress.streakDays = Math.max(next.progress.streakDays, 1);
-  updateWeeklyGoalPercent(next);
+  const today = getOrCreateTodayRecord(next);
+  today.studyMinutes += 1;
+  today.listenedPoemIds = addUnique(today.listenedPoemIds, poemId);
+  const progress = getOrCreatePoemProgress(next, poemId);
+  progress.listenedCount += 1;
+  progress.lastStudyTime = new Date().getTime();
+  refreshProgressFromRecords(next);
   return next;
 }
 
-export function recordReadingResult(data: PoemBudData, poemId: string, score: number, recordPath: string): PoemBudData {
+export function recordReadingResult(
+  data: PoemBudData,
+  poemId: string,
+  score: number,
+  recordPath: string,
+  lineIndex: number = 0,
+  lineText: string = '',
+  durationSeconds: number = 0
+): PoemBudData {
   const next = clonePoemBudData(data);
   const now = new Date().getTime();
+  const rewardStars = Math.max(2, Math.min(5, durationSeconds >= 8 ? 5 : durationSeconds >= 4 ? 4 : 3));
   markRecentPoem(next, poemId);
   markLearnedPoem(next, poemId);
   next.reading.attempts += 1;
@@ -228,21 +407,30 @@ export function recordReadingResult(data: PoemBudData, poemId: string, score: nu
   next.reading.bestScore = Math.max(next.reading.bestScore, score);
   next.reading.lastRecordPath = recordPath;
   next.reading.lastRecordTime = now;
-  next.progress.weeklyReadingCount += 1;
-  next.progress.weeklyStars += 4;
-  next.progress.totalStars += 4;
+  const attempt: ReadingAttemptData = {
+    poemId,
+    lineIndex,
+    lineText,
+    recordPath,
+    durationSeconds,
+    rewardStars,
+    createdAt: now
+  };
+  const history = next.reading.attemptHistory.slice();
+  history.unshift(attempt);
+  next.reading.attemptHistory = history.slice(0, 80);
+  const today = getOrCreateTodayRecord(next);
+  today.readingCount += 1;
+  today.studyMinutes += 2;
+  today.stars += rewardStars;
+  const progress = getOrCreatePoemProgress(next, poemId);
+  progress.readingCount += 1;
+  progress.lastStudyTime = now;
+  next.progress.totalStars += rewardStars;
   next.progress.todayMinutes += 2;
   next.progress.learnedPoems = Math.max(next.progress.learnedPoems, 1);
-  next.progress.weeklyPoems = Math.max(next.progress.weeklyPoems, 1);
-  next.progress.weeklyStudyDays = Math.max(next.progress.weeklyStudyDays, 1);
-  next.progress.streakDays = Math.max(next.progress.streakDays, 1);
-  next.progress.totalStudyDays = Math.max(next.progress.totalStudyDays, 1);
-  updateWeeklyGoalPercent(next);
-  next.achievements = [
-    `完成一次《静夜思》跟读，获得4颗星星`,
-    next.achievements[0],
-    next.achievements[1]
-  ];
+  refreshProgressFromRecords(next);
+  prependAchievement(next, `完成一次跟读练习，获得${rewardStars}颗星星`);
   return next;
 }
 
@@ -251,7 +439,8 @@ export function completeChallenge(data: PoemBudData, poemId: string): PoemBudDat
   const now = new Date().getTime();
   markRecentPoem(next, poemId);
   markLearnedPoem(next, poemId);
-  if (next.challenge.lastCompletedTime === 0) {
+  const progress = getOrCreatePoemProgress(next, poemId);
+  if (progress.challengePassedCount < next.challenge.currentLevel) {
     next.challenge.passedLevels = Math.max(next.challenge.passedLevels, next.challenge.currentLevel);
     next.challenge.stars += 3;
     next.challenge.lastCompletedTime = now;
@@ -260,20 +449,18 @@ export function completeChallenge(data: PoemBudData, poemId: string): PoemBudDat
       passedIds.push(poemId);
       next.study.challengePassedPoemIds = passedIds;
     }
-    next.progress.weeklyStars += 3;
+    const today = getOrCreateTodayRecord(next);
+    today.challengeCount += 1;
+    today.studyMinutes += 2;
+    today.stars += 3;
+    progress.challengePassedCount = Math.max(progress.challengePassedCount, next.challenge.currentLevel);
+    progress.mastered = progress.challengePassedCount >= 3;
+    progress.lastStudyTime = now;
     next.progress.totalStars += 3;
     next.progress.masteredPoems = next.study.challengePassedPoemIds.length;
     next.progress.learnedPoems = Math.max(next.progress.learnedPoems, next.challenge.currentLevel);
-    next.progress.weeklyPoems = Math.max(next.progress.weeklyPoems, 1);
-    next.progress.weeklyStudyDays = Math.max(next.progress.weeklyStudyDays, 1);
-    next.progress.streakDays = Math.max(next.progress.streakDays, 1);
-    next.progress.totalStudyDays = Math.max(next.progress.totalStudyDays, 1);
-    updateWeeklyGoalPercent(next);
-    next.achievements = [
-      `通过第${next.challenge.currentLevel}关，获得3颗星星`,
-      next.achievements[0],
-      next.achievements[1]
-    ];
+    refreshProgressFromRecords(next);
+    prependAchievement(next, `通过第${next.challenge.currentLevel}关，获得3颗星星`);
   }
   return next;
 }
@@ -290,7 +477,7 @@ export function signInLocalProfile(data: PoemBudData): PoemBudData {
 
 export function advanceChallengeLevel(data: PoemBudData): PoemBudData {
   const next = clonePoemBudData(data);
-  next.challenge.currentLevel += 1;
+  next.challenge.currentLevel = Math.min(MAX_CHALLENGE_LEVEL, next.challenge.currentLevel + 1);
   next.challenge.lastCompletedTime = 0;
   return next;
 }
@@ -298,6 +485,7 @@ export function advanceChallengeLevel(data: PoemBudData): PoemBudData {
 export function openPoemLearning(data: PoemBudData, poemId: string): PoemBudData {
   const next = clonePoemBudData(data);
   markRecentPoem(next, poemId);
+  refreshProgressFromRecords(next);
   return next;
 }
 
@@ -311,6 +499,19 @@ export function toggleFavoritePoem(data: PoemBudData, poemId: string): PoemBudDa
     currentIds.push(poemId);
   }
   next.collection.favoritePoemIds = currentIds;
+  return next;
+}
+
+export function updateSettings(data: PoemBudData, settings: SettingsData): PoemBudData {
+  const next = clonePoemBudData(data);
+  next.settings = settings;
+  return next;
+}
+
+export function resetLocalStudyData(data: PoemBudData): PoemBudData {
+  const next = createDefaultPoemBudData();
+  next.profile = data.profile;
+  next.settings = data.settings;
   return next;
 }
 
