@@ -547,6 +547,22 @@ function getCategoryThumbnail(categoryId: string): Resource {
   return $r('app.media.thumb_wanglushanpubu');
 }
 
+function getCategoryIcon(categoryId: string): Resource {
+  if (categoryId === 'tang') {
+    return $r('app.media.icon_category_tang');
+  }
+  if (categoryId === 'moon') {
+    return $r('app.media.icon_category_moon');
+  }
+  if (categoryId === 'spring') {
+    return $r('app.media.icon_category_spring');
+  }
+  if (categoryId === 'landscape') {
+    return $r('app.media.icon_category_landscape');
+  }
+  return getCategoryThumbnail(categoryId);
+}
+
 function getTabIcon(index: number): Resource {
   if (index === 1) {
     return $r('app.media.tab_library_icon');
@@ -558,6 +574,35 @@ function getTabIcon(index: number): Resource {
     return $r('app.media.tab_profile_icon');
   }
   return $r('app.media.tab_home_icon');
+}
+
+function getBadgeIcon(title: string): Resource {
+  if (title === '诗词小达人') {
+    return $r('app.media.badge_poem_master');
+  }
+  if (title === '勤学好问') {
+    return $r('app.media.badge_diligent_learner');
+  }
+  if (title === '博古通今') {
+    return $r('app.media.badge_classics_scholar');
+  }
+  if (title === '坚持不懈') {
+    return $r('app.media.badge_persistence');
+  }
+  if (title === '出口成章') {
+    return $r('app.media.badge_recitation');
+  }
+  return $r('app.media.badge_daily_streak');
+}
+
+function getAchievementIcon(index: number): Resource {
+  if (index === 0) {
+    return $r('app.media.badge_classics_scholar');
+  }
+  if (index === 1) {
+    return $r('app.media.badge_daily_streak');
+  }
+  return $r('app.media.badge_favorites');
 }
 
 function getPoemMiniCardIcon(poemId: string): Resource {
@@ -919,6 +964,38 @@ struct SectionHeader {
 }
 
 @Component
+struct IconSectionHeader {
+  title: string = '';
+  subtitle: string = '';
+  icon: Resource = $r('app.media.icon_all_poems');
+
+  build() {
+    Row({ space: 10 }) {
+      Image(this.icon)
+        .width(38)
+        .height(38)
+        .borderRadius(19)
+        .objectFit(ImageFit.Cover);
+
+      Column({ space: 4 }) {
+        Text(this.title)
+          .fontSize(22)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Palette.ink);
+
+        Text(this.subtitle)
+          .fontSize(12)
+          .fontColor(Palette.muted);
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start);
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center);
+  }
+}
+
+@Component
 struct PlaqueTitleHeader {
   title: string = '';
   image: Resource = $r('app.media.title_today_recommend_v2');
@@ -1135,27 +1212,59 @@ struct CategoryCard {
 
   build() {
     Column({ space: 10 }) {
-      Image(getCategoryThumbnail(this.item.id))
-        .width(72)
-        .height(72)
-        .borderRadius(22)
-        .objectFit(ImageFit.Cover);
+      Stack({ alignContent: Alignment.TopStart }) {
+        Image(getCategoryIcon(this.item.id))
+          .width(82)
+          .height(82)
+          .borderRadius(41)
+          .objectFit(ImageFit.Cover)
+          .margin({ left: 5, top: 5 });
+
+        Row() {
+          Text(this.item.count.replace('诗', ''))
+            .fontSize(10)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(Palette.white)
+            .maxLines(1);
+        }
+        .width(48)
+        .height(22)
+        .borderRadius(11)
+        .backgroundColor(Palette.green)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .margin({ left: 44, top: 0 });
+      }
+      .width(92)
+      .height(92);
 
       Text(this.item.title)
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
-        .fontColor(Palette.ink);
+        .fontColor(Palette.ink)
+        .maxLines(1);
 
-      Text(this.item.count)
-        .fontSize(12)
-        .fontColor(Palette.muted);
+      Row({ space: 4 }) {
+        Text(this.item.count)
+          .fontSize(12)
+          .fontColor(Palette.muted);
+
+        Text('›')
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Palette.green);
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center);
     }
-    .width('48%')
-    .padding(16)
+    .width(116)
+    .height(178)
+    .padding({ left: 8, right: 8, top: 12, bottom: 12 })
     .borderRadius(24)
     .backgroundColor(Palette.card)
     .border({ width: 1, color: Palette.border })
-    .alignItems(HorizontalAlign.Start)
+    .alignItems(HorizontalAlign.Center)
     .onClick(() => {
       openNavDestination(this.stack, 'poemList', new PoemListRouteParam(this.item.title, this.item.id));
     });
@@ -1214,17 +1323,11 @@ struct RecentStudyRow {
           .fontSize(12)
           .fontColor(Palette.muted);
 
-        Row() {
-          Text('▶')
-            .fontSize(14)
-            .fontColor(Palette.green)
-            .fontWeight(FontWeight.Bold);
-        }
-        .width(42)
-        .height(42)
-        .borderRadius(21)
-        .backgroundColor(Palette.greenSoft)
-        .justifyContent(FlexAlign.Center);
+        Image($r('app.media.icon_recent_play'))
+          .width(42)
+          .height(42)
+          .borderRadius(21)
+          .objectFit(ImageFit.Cover);
       }
       .alignItems(HorizontalAlign.End);
     }
@@ -1392,7 +1495,11 @@ struct BadgeToken {
 
   build() {
     Column({ space: 10 }) {
-      MonogramBadge({ symbol: this.item.symbol, accent: this.item.accent, badgeSize: 46, fontSize: 18 });
+      Image(getBadgeIcon(this.item.title))
+        .width(48)
+        .height(48)
+        .borderRadius(24)
+        .objectFit(ImageFit.Cover);
 
       Text(this.item.title)
         .fontSize(12)
@@ -1460,6 +1567,53 @@ struct ServiceRow {
     }
     .width('100%')
     .padding({ top: 10, bottom: 10 })
+    .onClick(() => {
+      if (this.routeName.length > 0) {
+        openNavDestination(this.stack, this.routeName, this.routeParam);
+      }
+    });
+  }
+}
+
+@Component
+struct ProfileToolCard {
+  title: string = '';
+  subtitle: string = '';
+  icon: Resource = $r('app.media.icon_all_poems');
+  stack: NavPathStack = new NavPathStack();
+  routeName: string = '';
+  routeParam: Object = new InfoRouteParam('', '', '');
+
+  build() {
+    Row({ space: 10 }) {
+      Image(this.icon)
+        .width(44)
+        .height(44)
+        .borderRadius(16)
+        .objectFit(ImageFit.Cover);
+
+      Column({ space: 4 }) {
+        Text(this.title)
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Palette.ink)
+          .maxLines(1);
+
+        Text(this.subtitle)
+          .fontSize(11)
+          .fontColor(Palette.muted)
+          .maxLines(1);
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start);
+    }
+    .width('48%')
+    .height(76)
+    .padding(12)
+    .borderRadius(22)
+    .backgroundColor(Palette.card)
+    .border({ width: 1, color: Palette.border })
+    .alignItems(VerticalAlign.Center)
     .onClick(() => {
       if (this.routeName.length > 0) {
         openNavDestination(this.stack, this.routeName, this.routeParam);
@@ -1996,38 +2150,52 @@ struct CollectionPage {
   build() {
     Scroll() {
       Column({ space: 18 }) {
-        Row() {
-          Column({ space: 4 }) {
-            Text('诗库')
-              .fontSize(28)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(Palette.ink);
+        Stack({ alignContent: Alignment.TopStart }) {
+          Image($r('app.media.bg_collection_header'))
+            .width('100%')
+            .height(178)
+            .borderRadius(30)
+            .objectFit(ImageFit.Cover);
 
-            Text('收藏好诗，随时学习。')
-              .fontSize(12)
-              .fontColor(Palette.muted);
+          Row() {
+            Column({ space: 6 }) {
+              Text('诗库')
+                .fontSize(30)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Palette.ink);
+
+              Text('收藏好诗，随时学习。')
+                .fontSize(13)
+                .fontColor(Palette.muted);
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Start);
+
+            Row() {
+              Image($r('app.media.icon_all_poems'))
+                .width(34)
+                .height(34)
+                .borderRadius(17)
+                .objectFit(ImageFit.Cover);
+            }
+            .width(50)
+            .height(50)
+            .borderRadius(25)
+            .backgroundColor(Palette.card)
+            .border({ width: 1, color: Palette.border })
+            .justifyContent(FlexAlign.Center)
+            .alignItems(VerticalAlign.Center)
+            .onClick(() => {
+              openNavDestination(this.stack, 'poemList', new PoemListRouteParam('全部诗词', '', ''));
+            });
           }
-          .alignItems(HorizontalAlign.Start);
-
-          Blank();
-
-          Row({ space: 8 }) {
-            Image($r('app.media.icon_library'))
-              .width(40)
-              .height(40)
-              .borderRadius(20)
-              .objectFit(ImageFit.Cover);
-            Image($r('app.media.icon_hot'))
-              .width(40)
-              .height(40)
-              .borderRadius(20)
-              .objectFit(ImageFit.Cover)
-              .onClick(() => {
-                openNavDestination(this.stack, 'poemList', new PoemListRouteParam('全部诗词', '', ''));
-              });
-          }
+          .width('100%')
+          .height(178)
+          .padding({ left: 20, right: 18, top: 24, bottom: 18 })
+          .alignItems(VerticalAlign.Top);
         }
-        .width('100%');
+        .width('100%')
+        .height(178);
 
         TextInput({ placeholder: '搜索诗名、作者或诗句', text: this.searchKeyword })
           .width('100%')
@@ -2123,23 +2291,29 @@ struct CollectionPage {
           .alignItems(HorizontalAlign.Start);
         }
 
-        SectionHeader({ title: '诗单分类', subtitle: '按主题慢慢收集，一首一首读熟。' });
+        IconSectionHeader({
+          title: '诗单分类',
+          subtitle: '按主题慢慢收集，一首一首读熟。',
+          icon: $r('app.media.icon_category_tang')
+        });
 
-        Row({ space: 12 }) {
-          CategoryCard({ item: CATEGORIES[0], stack: this.stack });
-          CategoryCard({ item: CATEGORIES[1], stack: this.stack });
+        Scroll() {
+          Row({ space: 12 }) {
+            ForEach(CATEGORIES, (item: CategoryModel) => {
+              CategoryCard({ item: item, stack: this.stack });
+            }, (item: CategoryModel) => item.id);
+          }
+          .padding({ right: 4 });
         }
         .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween);
+        .scrollable(ScrollDirection.Horizontal)
+        .scrollBar(BarState.Off);
 
-        Row({ space: 12 }) {
-          CategoryCard({ item: CATEGORIES[2], stack: this.stack });
-          CategoryCard({ item: CATEGORIES[3], stack: this.stack });
-        }
-        .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween);
-
-        SectionHeader({ title: '最近学习', subtitle: '继续你还没背熟的那些诗。' });
+        IconSectionHeader({
+          title: '最近学习',
+          subtitle: '继续你还没背熟的那些诗。',
+          icon: $r('app.media.icon_notice_bell')
+        });
 
         Column({ space: 12 }) {
           ForEach(getRecentStudyRows(this.data), (item: RecentStudyModel) => {
@@ -2659,34 +2833,74 @@ struct ProfilePage {
   build() {
     Scroll() {
       Column({ space: 18 }) {
-        Row() {
-          Text('我的')
-            .fontSize(28)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(Palette.ink);
+        Stack({ alignContent: Alignment.TopStart }) {
+          Image($r('app.media.bg_profile_header'))
+            .width('100%')
+            .height(178)
+            .borderRadius(30)
+            .objectFit(ImageFit.Cover);
 
-          Blank();
+          Column({ space: 4 }) {
+            Text('我的')
+              .fontSize(30)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Palette.ink);
 
-          Row({ space: 8 }) {
-            Image($r('app.media.icon_today'))
-              .width(40)
-              .height(40)
-              .borderRadius(20)
-              .objectFit(ImageFit.Cover)
-              .onClick(() => {
-                openNavDestination(this.stack, 'info', new InfoRouteParam('通知提醒', '单机版暂不接系统推送。', '后续可以扩展本地学习提醒。'));
-              });
-            Image($r('app.media.icon_library'))
-              .width(40)
-              .height(40)
-              .borderRadius(20)
-              .objectFit(ImageFit.Cover)
-              .onClick(() => {
-                openNavDestination(this.stack, 'info', new InfoRouteParam('页面设置', '当前提供基础显示信息。', '后续可以继续扩展字体大小和护眼模式。'));
-              });
+            Text('个人中心')
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(Palette.green);
           }
+          .margin({ left: 20, top: 22 })
+          .alignItems(HorizontalAlign.Start);
+
+          Row() {
+            Blank();
+
+            Row({ space: 10 }) {
+              Row() {
+                Image($r('app.media.icon_all_poems'))
+                  .width(32)
+                  .height(32)
+                  .borderRadius(16)
+                  .objectFit(ImageFit.Cover);
+              }
+              .width(50)
+              .height(50)
+              .borderRadius(25)
+              .backgroundColor(Palette.card)
+              .border({ width: 1, color: Palette.border })
+              .justifyContent(FlexAlign.Center)
+              .alignItems(VerticalAlign.Center)
+              .onClick(() => {
+                openNavDestination(this.stack, 'growth', new InfoRouteParam('', '', ''));
+              });
+
+              Row() {
+                Image($r('app.media.icon_settings_brush'))
+                  .width(32)
+                  .height(32)
+                  .borderRadius(16)
+                  .objectFit(ImageFit.Cover);
+              }
+              .width(50)
+              .height(50)
+              .borderRadius(25)
+              .backgroundColor(Palette.card)
+              .border({ width: 1, color: Palette.border })
+              .justifyContent(FlexAlign.Center)
+              .alignItems(VerticalAlign.Center)
+              .onClick(() => {
+                openNavDestination(this.stack, 'settings', new InfoRouteParam('', '', ''));
+              });
+            }
+            .alignItems(VerticalAlign.Center);
+          }
+          .width('100%')
+          .padding({ right: 18, top: 20 });
         }
-        .width('100%');
+        .width('100%')
+        .height(178);
 
         Row({ space: 16 }) {
           Image($r('app.media.poem_profile_hero'))
@@ -2852,96 +3066,62 @@ struct ProfilePage {
         .backgroundColor(Palette.card)
         .border({ width: 1, color: Palette.border });
 
-        Row({ space: 12 }) {
-          Column({ space: 4 }) {
-            ServiceRow({
+        Column({ space: 12 }) {
+          IconSectionHeader({
+            title: '常用功能',
+            subtitle: '学习数据、成就和诗单都在这里。',
+            icon: $r('app.media.icon_all_poems')
+          });
+
+          Row({ space: 12 }) {
+            ProfileToolCard({
               title: '学习报告',
               subtitle: '查看本周进步',
-              symbol: '报',
+              icon: $r('app.media.icon_all_poems'),
               stack: this.stack,
               routeName: 'growth',
               routeParam: new InfoRouteParam('', '', '')
             });
-            ServiceRow({
+
+            ProfileToolCard({
               title: '成就墙',
-              subtitle: '看看获得了什么',
-              symbol: '星',
+              subtitle: '获得的勋章',
+              icon: $r('app.media.icon_category_tang'),
               stack: this.stack,
               routeName: 'growth',
               routeParam: new InfoRouteParam('', '', '')
             });
-            ServiceRow({
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.SpaceBetween);
+
+          Row({ space: 12 }) {
+            ProfileToolCard({
               title: '跟读记录',
-              subtitle: '找到最近朗读的诗',
-              symbol: '读',
+              subtitle: `${this.data.reading.attempts} 次练习`,
+              icon: $r('app.media.icon_follow_read'),
               stack: this.stack,
               routeName: 'info',
               routeParam: new InfoRouteParam('跟读记录', `累计练习 ${this.data.reading.attempts} 次`, this.data.reading.lastRecordPath.length > 0 ? this.data.reading.lastRecordPath : '还没有录音记录，先去完成一次跟读练习。')
             });
-            ServiceRow({
+
+            ProfileToolCard({
               title: '收藏管理',
-              subtitle: '整理自己的诗单',
-              symbol: '藏',
+              subtitle: `${this.data.collection.favoritePoemIds.length} 首收藏`,
+              icon: $r('app.media.tab_library_icon'),
               stack: this.stack,
               routeName: 'poemList',
               routeParam: new PoemListRouteParam('我的收藏', '', '')
             });
-            ServiceRow({
-              title: '设置',
-              subtitle: '通知与字体大小',
-              symbol: '设',
-              stack: this.stack,
-              routeName: 'settings',
-              routeParam: new InfoRouteParam('', '', '')
-            });
           }
-          .width('58%')
-          .padding(16)
-          .borderRadius(28)
-          .backgroundColor(Palette.card)
-          .border({ width: 1, color: Palette.border });
-
-          Column({ space: 12 }) {
-            Column({ space: 8 }) {
-              Text('家长中心')
-                .fontSize(18)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(Palette.ink);
-              Text('查看孩子学习情况')
-                .fontSize(12)
-                .fontColor(Palette.muted);
-            }
-            .width('100%')
-            .padding(16)
-            .borderRadius(24)
-            .backgroundColor(Palette.orangeSoft)
-            .alignItems(HorizontalAlign.Start)
-            .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('家长中心', '当前是单机版说明页。', '可以在“学习报告”和“跟读记录”里查看本地学习数据。'));
-            });
-
-            Column({ space: 8 }) {
-              Text('帮助与反馈')
-                .fontSize(18)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(Palette.ink);
-              Text('有问题就来找我们')
-                .fontSize(12)
-                .fontColor(Palette.muted);
-            }
-            .width('100%')
-            .padding(16)
-            .borderRadius(24)
-            .backgroundColor(Palette.blueSoft)
-            .alignItems(HorizontalAlign.Start)
-            .onClick(() => {
-              openNavDestination(this.stack, 'info', new InfoRouteParam('帮助与反馈', '当前为本地帮助页。', '如需继续补充更多功能，可以继续让我直接改工程。'));
-            });
-          }
-          .width('38%');
+          .width('100%')
+          .justifyContent(FlexAlign.SpaceBetween);
         }
         .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween);
+        .padding(18)
+        .borderRadius(28)
+        .backgroundColor(Palette.card)
+        .border({ width: 1, color: Palette.border });
 
         Column({ space: 12 }) {
           Text('最近成就')
@@ -2951,12 +3131,11 @@ struct ProfilePage {
 
           ForEach(this.data.achievements, (item: string, index: number) => {
             Row({ space: 12 }) {
-              MonogramBadge({
-                symbol: index === 0 ? '卷' : index === 1 ? '日' : '藏',
-                accent: index === 0 ? Palette.orange : index === 1 ? Palette.green : Palette.blue,
-                badgeSize: 36,
-                fontSize: 14
-              });
+              Image(getAchievementIcon(index))
+                .width(38)
+                .height(38)
+                .borderRadius(19)
+                .objectFit(ImageFit.Cover);
 
               Text(item)
                 .fontSize(13)
@@ -3042,13 +3221,58 @@ struct PoemListPage {
   build() {
     Scroll() {
       Column({ space: 16 }) {
-        DetailTopBar({ title: this.title.length > 0 ? this.title : '全部诗词', trailing: `${this.poems().length}首`, stack: this.stack });
+        Row({ space: 12 }) {
+          Row() {
+            Text('‹')
+              .fontSize(22)
+              .fontColor(Palette.green)
+              .fontWeight(FontWeight.Bold);
+          }
+          .width(42)
+          .height(42)
+          .borderRadius(21)
+          .backgroundColor(Palette.card)
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.stack.pop();
+          });
+
+          Column({ space: 3 }) {
+            Text(this.title.length > 0 ? this.title : '全部诗词')
+              .fontSize(26)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Palette.ink)
+              .maxLines(1);
+
+            Text(this.title === '我的收藏' ? '收藏过的诗词都在这里' : '按主题学习真实古诗')
+              .fontSize(12)
+              .fontColor(Palette.muted)
+              .maxLines(1);
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Start);
+
+          Row() {
+            Text(`${this.poems().length}首`)
+              .fontSize(13)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(Palette.green);
+          }
+          .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+          .borderRadius(18)
+          .backgroundColor(Palette.card)
+          .border({ width: 1, color: Palette.border });
+        }
+        .width('100%')
+        .alignItems(VerticalAlign.Center);
 
         ForEach(this.poems(), (poem: OfflinePoem) => {
           PoemListRow({ poem: poem, stack: this.stack });
         }, (poem: OfflinePoem) => poem.id);
       }
       .width('100%')
+      .constraintSize({ minHeight: '100%' })
+      .justifyContent(FlexAlign.Start)
       .padding({ left: 16, right: 16, top: 20, bottom: 20 })
       .backgroundColor(Palette.paper);
     }
