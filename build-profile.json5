@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "/Users/max/Documents/HarmonyOS-Signing/PoemBud/PoemBud_release.p12",
+          "storePassword": "00000018A4FDEE74AB4D3899E9F6A7B6EAA9104DB3BCA9E52E2AC086F17AB6458DF7885FAD092E06",
+          "keyAlias": "poembud_release",
+          "keyPassword": "000000182B5C44CA9CCDAF54BDA2FEBE73A1293559B0926852157DA4A65520804FD0E15E0A588DD3",
+          "signAlg": "SHA256withECDSA",
+          "profile": "/Users/max/Documents/HarmonyOS-Signing/PoemBud/PoemBud_release_profile_20260505Release.p7b",
+          "certpath": "/Users/max/Documents/HarmonyOS-Signing/PoemBud/PoemBud_release_20260505.cer"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
