@@ -17,6 +17,7 @@ import {
   openPoemLearning,
   PoemBudData,
   PoemBudStore,
+  ReadingAttemptData,
   recordPoemListening,
   recordReadingResult,
   resetLocalStudyData,
@@ -26,6 +27,7 @@ import {
 } from '../model/PoemBudStore';
 import { PoemAudioPlayer } from '../utils/PoemAudioPlayer';
 import { PoemRecorder } from '../utils/PoemRecorder';
+import { SpeechManager } from '../utils/SpeechManager';
 
 interface PoemCardModel {
   id: string;
@@ -115,11 +117,13 @@ class PoemListRouteParam {
   title: string = '';
   categoryId: string = '';
   query: string = '';
+  poemIds: string[] = [];
 
-  constructor(title: string, categoryId: string, query: string = '') {
+  constructor(title: string, categoryId: string, query: string = '', poemIds: string[] = []) {
     this.title = title;
     this.categoryId = categoryId;
     this.query = query;
+    this.poemIds = poemIds;
   }
 }
 
@@ -159,6 +163,14 @@ const FEATURED_POEM: PoemCardModel = {
   symbol: '春',
   accent: Palette.green
 };
+
+const REPORT_CONTACT_EMAIL: string = '404924175@qq.com';
+
+const REPORT_CONTENT: string =
+  `如发现诗词内容、朗读音频、儿童使用体验或其他涉及未成年人的问题，请通过以下渠道举报或投诉。\n\n举报邮箱：${REPORT_CONTACT_EMAIL}\n\n邮件标题建议写明“诗芽古诗举报反馈”，正文请说明问题页面、诗词名称、问题描述和联系方式。我们会在收到后尽快核查处理。\n\n举报范围包括：不适合未成年人内容、错误读音或释义、侵犯权益、诱导行为、隐私相关疑问，以及其他影响儿童使用安全的问题。`;
+
+const CHILD_PRIVACY_CONTENT: string =
+  '诗芽古诗面向儿童启蒙学习使用。应用不提供手机号、微信或云端账号登录，不接入广告投放，不提供公开发布、陌生人社交或付费交易能力。\n\n我们处理的信息主要包括：本机学习进度、收藏诗词、跟读录音文件、设置偏好和本地勋章记录。这些信息仅用于展示学习进度、播放录音、继续学习和改进本机体验。\n\n跟读录音仅保存在当前设备本地文件目录中，不会主动上传到服务器。家长或监护人可以在系统应用管理中清除应用数据，也可以在应用“设置”中清空本地学习数据。\n\n如监护人希望咨询、投诉、举报或请求处理儿童个人信息相关问题，请通过“举报与反馈”页面列出的邮箱联系我们。';
 
 interface PoemInterpretationModel {
   id: string;
@@ -678,9 +690,29 @@ function getPoemAudioRawFile(poemId: string): string {
   return getOfflinePoemById(poemId).audioRawFile;
 }
 
+function useTtsForPoem(poemId: string): boolean {
+  return poemId === 'chusai';
+}
+
+function getPoemAudioPlaybackKey(poemId: string): string {
+  if (useTtsForPoem(poemId)) {
+    return SpeechManager.playbackKeyForPoem(poemId);
+  }
+  return getPoemAudioRawFile(poemId);
+}
+
+function getPoemTtsText(poemId: string): string {
+  const poem = getOfflinePoemById(poemId);
+  return `${poem.title}。${poem.dynasty} ${poem.author}。${poem.lines.join('')}`;
+}
+
+function getReadingRecordPlaybackKey(recordPath: string): string {
+  return `record:${recordPath}`;
+}
+
 function hasPoemAudio(poemId: string): boolean {
   const poem = getOfflinePoemById(poemId);
-  return poem.audioAvailable && poem.audioRawFile.length > 0;
+  return poem.audioAvailable && (useTtsForPoem(poemId) || poem.audioRawFile.length > 0);
 }
 
 function getActivePoemAudioStatus(rawPath: string, playbackRawPath: string, playbackStatus: string): string {
@@ -1594,10 +1626,11 @@ struct ProfileToolCard {
 
       Column({ space: 4 }) {
         Text(this.title)
-          .fontSize(16)
+          .fontSize(this.title.length > 4 ? 14 : 15)
           .fontWeight(FontWeight.Bold)
           .fontColor(Palette.ink)
-          .maxLines(1);
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis });
 
         Text(this.subtitle)
           .fontSize(11)
@@ -1698,7 +1731,7 @@ struct HomePage {
     if (!hasPoemAudio(poemId) || !this.data.settings.soundEnabled) {
       return;
     }
-    const rawPath = this.featuredPoemAudioRawPath();
+    const playbackKey = getPoemAudioPlaybackKey(poemId);
     const playbackStatus = this.featuredPoemPlaybackStatus();
     console.info(`[PoemBud] toggle featured poem from home poemId=${poemId} status=${playbackStatus}`);
     if (playbackStatus === 'loading') {
@@ -1712,8 +1745,12 @@ struct HomePage {
     }
 
     try {
+      if (useTtsForPoem(poemId)) {
+        await SpeechManager.toggleSpeak(getPoemTtsText(poemId), playbackKey);
+        return;
+      }
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await PoemAudioPlayer.toggleRawFile(context, rawPath);
+      await PoemAudioPlayer.toggleRawFile(context, getPoemAudioRawFile(poemId));
     } catch (err) {
       console.error(`Failed to play featured poem audio: ${JSON.stringify(err)}`);
     }
@@ -1732,7 +1769,7 @@ struct HomePage {
   }
 
   private featuredPoemAudioRawPath(): string {
-    return getPoemAudioRawFile(getCurrentPoemId(this.data));
+    return getPoemAudioPlaybackKey(getCurrentPoemId(this.data));
   }
 
   private featuredPoemPlaybackStatus(): string {
@@ -2347,7 +2384,7 @@ struct StudyPage {
   }
 
   private poemAudioRawPath(): string {
-    return getPoemAudioRawFile(this.poemId);
+    return getPoemAudioPlaybackKey(this.poemId);
   }
 
   private poemPlaybackStatus(): string {
@@ -2370,8 +2407,12 @@ struct StudyPage {
         this.data = next;
         await PoemBudStore.save(next);
       }
+      if (useTtsForPoem(this.poemId)) {
+        await SpeechManager.toggleSpeak(getPoemTtsText(this.poemId), this.poemAudioRawPath());
+        return;
+      }
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await PoemAudioPlayer.toggleRawFile(context, this.poemAudioRawPath());
+      await PoemAudioPlayer.toggleRawFile(context, getPoemAudioRawFile(this.poemId));
     } catch (err) {
       console.error(`Failed to play poem audio: ${JSON.stringify(err)}`);
     }
@@ -2661,7 +2702,7 @@ struct GrowthPage {
             .borderRadius(16)
             .backgroundColor(Palette.greenSoft)
             .onClick(() => {
-              openNavDestination(this.stack, 'poemList', new PoemListRouteParam('我的收藏', '', ''));
+              openNavDestination(this.stack, 'poemList', new PoemListRouteParam('我的收藏', '', '', this.data.collection.favoritePoemIds.slice()));
             });
           }
           .width('48%')
@@ -3111,7 +3152,29 @@ struct ProfilePage {
               icon: $r('app.media.tab_library_icon'),
               stack: this.stack,
               routeName: 'poemList',
-              routeParam: new PoemListRouteParam('我的收藏', '', '')
+              routeParam: new PoemListRouteParam('我的收藏', '', '', this.data.collection.favoritePoemIds.slice())
+            });
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.SpaceBetween);
+
+          Row({ space: 12 }) {
+            ProfileToolCard({
+              title: '举报反馈',
+              subtitle: '未成年人投诉举报',
+              icon: $r('app.media.icon_notice_bell'),
+              stack: this.stack,
+              routeName: 'info',
+              routeParam: new InfoRouteParam('举报与反馈', '未成年人保护举报渠道', REPORT_CONTENT)
+            });
+
+            ProfileToolCard({
+              title: '儿童隐私',
+              subtitle: '儿童隐私保护说明',
+              icon: $r('app.media.icon_profile'),
+              stack: this.stack,
+              routeName: 'info',
+              routeParam: new InfoRouteParam('儿童隐私政策', '儿童个人信息保护说明', CHILD_PRIVACY_CONTENT)
             });
           }
           .width('100%')
@@ -3175,25 +3238,31 @@ struct InfoPage {
   }
 
   build() {
-    Column({ space: 18 }) {
-      DetailTopBar({ title: this.title, trailing: '', stack: this.stack });
+    Scroll() {
+      Column({ space: 18 }) {
+        DetailTopBar({ title: this.title, trailing: '', stack: this.stack });
 
-      Text(this.subtitle)
-        .fontSize(16)
-        .fontColor(Palette.green)
-        .width('100%');
+        Text(this.subtitle)
+          .fontSize(16)
+          .fontColor(Palette.green)
+          .width('100%');
 
-      Text(this.content)
-        .fontSize(15)
-        .fontColor(Palette.ink)
-        .lineHeight(26)
-        .width('100%');
+        Text(this.content)
+          .fontSize(15)
+          .fontColor(Palette.ink)
+          .lineHeight(26)
+          .width('100%');
+      }
+      .width('100%')
+      .constraintSize({ minHeight: '100%' })
+      .padding({ left: 20, right: 20, top: 20, bottom: 20 })
+      .backgroundColor(Palette.paper)
+      .alignItems(HorizontalAlign.Start);
     }
+    .scrollBar(BarState.Off)
     .width('100%')
     .height('100%')
-    .padding({ left: 20, right: 20, top: 20, bottom: 20 })
-    .backgroundColor(Palette.paper)
-    .alignItems(HorizontalAlign.Start);
+    .backgroundColor(Palette.paper);
   }
 }
 
@@ -3204,10 +3273,12 @@ struct PoemListPage {
   title: string = '全部诗词';
   categoryId: string = '';
   query: string = '';
+  poemIds: string[] = [];
 
   private poems(): OfflinePoem[] {
     if (this.title === '我的收藏') {
-      return this.data.collection.favoritePoemIds.map((poemId: string) => getOfflinePoemById(poemId));
+      const ids = this.poemIds.length > 0 ? this.poemIds : this.data.collection.favoritePoemIds;
+      return ids.map((poemId: string) => getOfflinePoemById(poemId));
     }
     if (this.query.trim().length > 0) {
       return searchOfflinePoems(this.query);
@@ -3430,7 +3501,6 @@ struct ReadingPracticePage {
   stack: NavPathStack = new NavPathStack();
   @Link data: PoemBudData;
   poemId: string = FEATURED_POEM.id;
-  @State hasResult: boolean = false;
   @State isReading: boolean = false;
   @State currentLineIndex: number = 0;
   @State recordingStartedAt: number = 0;
@@ -3443,8 +3513,7 @@ struct ReadingPracticePage {
   }
 
   aboutToAppear(): void {
-    this.hasResult = this.data.reading.attemptHistory.length > 0;
-    console.info(`[PoemBud] reading page appear poemId=${this.poemId} hasResult=${this.hasResult}`);
+    console.info(`[PoemBud] reading page appear poemId=${this.poemId} hasResult=${this.hasCurrentPoemResult()}`);
   }
 
   private currentLineText(): string {
@@ -3455,8 +3524,16 @@ struct ReadingPracticePage {
     return this.currentPoem().pinyin[this.currentLineIndex] ?? '';
   }
 
+  private currentPoemAttempts(): ReadingAttemptData[] {
+    return this.data.reading.attemptHistory.filter((item: ReadingAttemptData) => item.poemId === this.poemId);
+  }
+
+  private hasCurrentPoemResult(): boolean {
+    return this.currentPoemAttempts().length > 0;
+  }
+
   private lastAttemptText(): string {
-    const last = this.data.reading.attemptHistory[0];
+    const last = this.currentPoemAttempts()[0];
     if (!last) {
       return '完成一次录音即可保存练习记录。';
     }
@@ -3464,11 +3541,52 @@ struct ReadingPracticePage {
   }
 
   private poemAudioRawPath(): string {
-    return getPoemAudioRawFile(this.poemId);
+    return getPoemAudioPlaybackKey(this.poemId);
   }
 
   private poemPlaybackStatus(): string {
     return getActivePoemAudioStatus(this.poemAudioRawPath(), this.audioPlaybackRawPath, this.audioPlaybackStatus);
+  }
+
+  private latestRecordPlaybackKey(): string {
+    const last = this.currentPoemAttempts()[0];
+    if (!last || last.recordPath.length === 0) {
+      return '';
+    }
+    return getReadingRecordPlaybackKey(last.recordPath);
+  }
+
+  private recordPlaybackStatus(): string {
+    const playbackKey = this.latestRecordPlaybackKey();
+    if (playbackKey.length === 0) {
+      return 'idle';
+    }
+    return getActivePoemAudioStatus(playbackKey, this.audioPlaybackRawPath, this.audioPlaybackStatus);
+  }
+
+  private recordPlaybackButtonLabel(): string {
+    if (!this.hasCurrentPoemResult()) {
+      return '暂无录音';
+    }
+    const status = this.recordPlaybackStatus();
+    if (status === 'loading') {
+      return '加载中';
+    }
+    if (status === 'playing' || status === 'paused') {
+      return '停止播放';
+    }
+    return '播放最近录音';
+  }
+
+  private recordPlaybackButtonColor(): string {
+    if (!this.hasCurrentPoemResult()) {
+      return '#E8DED0';
+    }
+    const status = this.recordPlaybackStatus();
+    if (status === 'loading' || status === 'playing' || status === 'paused') {
+      return Palette.green;
+    }
+    return Palette.greenSoft;
   }
 
   private async playPoemAudio(): Promise<void> {
@@ -3487,20 +3605,36 @@ struct ReadingPracticePage {
         this.data = next;
         await PoemBudStore.save(next);
       }
+      if (useTtsForPoem(this.poemId)) {
+        await SpeechManager.toggleSpeak(getPoemTtsText(this.poemId), this.poemAudioRawPath());
+        return;
+      }
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await PoemAudioPlayer.toggleRawFile(context, this.poemAudioRawPath());
+      await PoemAudioPlayer.toggleRawFile(context, getPoemAudioRawFile(this.poemId));
     } catch (err) {
       console.error(`Failed to play poem audio: ${JSON.stringify(err)}`);
     }
   }
 
   private async playLastRecord(): Promise<void> {
-    if (this.data.reading.lastRecordPath.length === 0) {
+    const last = this.currentPoemAttempts()[0];
+    if (!last || last.recordPath.length === 0) {
+      return;
+    }
+
+    const playbackKey = getReadingRecordPlaybackKey(last.recordPath);
+    const status = getActivePoemAudioStatus(playbackKey, this.audioPlaybackRawPath, this.audioPlaybackStatus);
+    if (status === 'loading') {
       return;
     }
 
     try {
-      await PoemAudioPlayer.playUri(`file://${this.data.reading.lastRecordPath}`);
+      if (status === 'playing' || status === 'paused') {
+        await PoemAudioPlayer.release();
+        return;
+      }
+      console.info(`[PoemBud] replay reading record poemId=${this.poemId} path=${last.recordPath}`);
+      await PoemAudioPlayer.playFile(last.recordPath, playbackKey);
     } catch (err) {
       console.error(`Failed to replay reading record: ${JSON.stringify(err)}`);
     }
@@ -3514,7 +3648,6 @@ struct ReadingPracticePage {
         const durationSeconds = Math.max(1, Math.round((new Date().getTime() - this.recordingStartedAt) / 1000));
         const next = recordReadingResult(this.data, this.poemId, 0, recordPath, this.currentLineIndex, this.currentLineText(), durationSeconds);
         this.data = next;
-        this.hasResult = true;
         await PoemBudStore.save(next);
         return;
       }
@@ -3614,19 +3747,19 @@ struct ReadingPracticePage {
               .objectFit(ImageFit.Cover);
 
             Column({ space: 10 }) {
-              Text(this.hasResult ? '读得真棒！' : '准备好了吗？')
+              Text(this.hasCurrentPoemResult() ? '读得真棒！' : '准备好了吗？')
                 .fontSize(24)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(Palette.ink);
 
-              Text(this.hasResult ? this.lastAttemptText() : '点击下方按钮，系统会录下你的朗读。')
+              Text(this.hasCurrentPoemResult() ? this.lastAttemptText() : '点击下方按钮，系统会录下你的朗读。')
                 .fontSize(13)
                 .fontColor(Palette.muted);
 
               Row({ space: 8 }) {
-                Text(this.hasResult ? '⭐ 已保存本地练习记录' : '跟读前先深呼吸一下')
+                Text(this.hasCurrentPoemResult() ? '⭐ 已保存本地练习记录' : '跟读前先深呼吸一下')
                   .fontSize(14)
-                  .fontColor(this.hasResult ? Palette.gold : Palette.green);
+                  .fontColor(this.hasCurrentPoemResult() ? Palette.gold : Palette.green);
               }
             }
             .layoutWeight(1)
@@ -3695,7 +3828,7 @@ struct ReadingPracticePage {
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
 
-              Text(this.hasResult ? `${this.data.reading.attempts}次` : '--')
+              Text(this.hasCurrentPoemResult() ? `${this.currentPoemAttempts().length}次` : '--')
                 .fontSize(36)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(Palette.orange);
@@ -3716,19 +3849,22 @@ struct ReadingPracticePage {
                 .fontWeight(FontWeight.Medium)
                 .fontColor(Palette.ink);
 
-              Text(this.hasResult ? this.lastAttemptText() : '先完成一次录音，系统会记录练习次数和星星奖励。')
+              Text(this.hasCurrentPoemResult() ? this.lastAttemptText() : '先完成一次录音，系统会记录练习次数和星星奖励。')
                 .fontSize(13)
                 .lineHeight(22)
                 .fontColor(Palette.muted);
 
               Row() {
-                Text('播放最近录音')
+                Text(this.recordPlaybackButtonLabel())
                   .fontSize(13)
-                  .fontColor(this.data.reading.lastRecordPath.length > 0 ? Palette.green : Palette.muted);
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(this.recordPlaybackStatus() === 'playing' || this.recordPlaybackStatus() === 'loading' ? Palette.white : this.hasCurrentPoemResult() ? Palette.green : Palette.muted);
               }
               .padding({ left: 14, right: 14, top: 8, bottom: 8 })
               .borderRadius(18)
-              .backgroundColor(Palette.greenSoft)
+              .backgroundColor(this.recordPlaybackButtonColor())
+              .border({ width: 1, color: this.hasCurrentPoemResult() ? Palette.green : Palette.border })
+              .opacity(this.hasCurrentPoemResult() ? 1 : 0.72)
               .onClick(() => {
                 this.playLastRecord();
               });
@@ -3749,7 +3885,7 @@ struct ReadingPracticePage {
               .fontWeight(FontWeight.Bold)
               .fontColor(Palette.ink);
 
-            Text(this.hasResult ? '⭐ ⭐ ⭐ ⭐ ☆' : '完成一次朗读即可点亮星星')
+            Text(this.hasCurrentPoemResult() ? '⭐ ⭐ ⭐ ⭐ ☆' : '完成一次朗读即可点亮星星')
               .fontSize(22)
               .fontColor(Palette.gold);
 
@@ -4231,11 +4367,12 @@ struct PoemListRouteEntry {
   title: string = '全部诗词';
   categoryId: string = '';
   query: string = '';
+  poemIds: string[] = [];
   @State stack: NavPathStack = new NavPathStack();
 
   build() {
     NavDestination() {
-      PoemListPage({ stack: this.stack, title: this.title, categoryId: this.categoryId, query: this.query });
+      PoemListPage({ stack: this.stack, title: this.title, categoryId: this.categoryId, query: this.query, poemIds: this.poemIds });
     }
     .hideTitleBar(true)
     .onReady((context: NavDestinationContext) => {
@@ -4293,7 +4430,8 @@ function PoemListRouteBuilder(_name?: string, param?: Object) {
   PoemListRouteEntry({
     title: (param as PoemListRouteParam)?.title ?? '全部诗词',
     categoryId: (param as PoemListRouteParam)?.categoryId ?? '',
-    query: (param as PoemListRouteParam)?.query ?? ''
+    query: (param as PoemListRouteParam)?.query ?? '',
+    poemIds: (param as PoemListRouteParam)?.poemIds ?? []
   });
 }
 

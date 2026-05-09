@@ -465,7 +465,7 @@ export const OFFLINE_POEMS: OfflinePoem[] = [
     dynasty: "唐",
     author: "王昌龄",
     lines: ["秦时明月汉时关，万里长征人未还。","但使龙城飞将在，不教胡马度阴山。"],
-    pinyin: ["qín shí míng yuè hàn shí guān， wàn lǐ cháng zhēng rén wèi hái。","dàn shǐ lóng chéng fēi jiāng zài， bú jiào hú mǎ dù yīn shān。"],
+    pinyin: ["qín shí míng yuè hàn shí guān， wàn lǐ cháng zhēng rén wèi huán。","dàn shǐ lóng chéng fēi jiāng zài， bú jiào hú mǎ dù yīn shān。"],
     categories: ["tang","frontier","moon"],
     tags: ["tang","frontier","moon"],
     difficulty: 4,

@@ -278,6 +278,10 @@ export function clonePoemBudData(data: PoemBudData): PoemBudData {
   return JSON.parse(JSON.stringify(data)) as PoemBudData;
 }
 
+function syncPoemBudAppStorage(data: PoemBudData): void {
+  AppStorage.setOrCreate<PoemBudData>('poemBudData', clonePoemBudData(data));
+}
+
 function normalizePoemBudData(data: PoemBudData): PoemBudData {
   const defaults = createDefaultPoemBudData();
   const normalized = clonePoemBudData(defaults);
@@ -523,13 +527,15 @@ export class PoemBudStore {
       try {
         const parsed = JSON.parse(stored) as PoemBudData;
         if (parsed.schemaVersion !== SCHEMA_VERSION) {
-          const defaults = createDefaultPoemBudData();
-          console.info(`[PoemBud] reset old preferences schema=${parsed.schemaVersion}`);
-          await PoemBudStore.save(defaults);
-          return defaults;
+          const migrated = normalizePoemBudData(parsed);
+          console.info(`[PoemBud] migrate preferences schema=${parsed.schemaVersion} to ${SCHEMA_VERSION}`);
+          await PoemBudStore.save(migrated);
+          return migrated;
         }
         console.info(`[PoemBud] load prefs loggedIn=${parsed.profile.loggedIn} level=${parsed.profile.level} todayMinutes=${parsed.progress.todayMinutes}`);
-        return normalizePoemBudData(parsed);
+        const normalized = normalizePoemBudData(parsed);
+        syncPoemBudAppStorage(normalized);
+        return normalized;
       } catch (_err) {
         const defaults = createDefaultPoemBudData();
         console.info('[PoemBud] reset invalid preferences payload');
@@ -545,9 +551,11 @@ export class PoemBudStore {
   }
 
   static async save(data: PoemBudData): Promise<void> {
+    const snapshot = normalizePoemBudData(data);
     const prefs = await PreferencesManager.getPreferences(STORE_NAME);
-    console.info(`[PoemBud] save prefs loggedIn=${data.profile.loggedIn} level=${data.profile.level} todayMinutes=${data.progress.todayMinutes} weeklyGoal=${data.progress.weeklyGoalPercent}`);
-    await prefs.put(DATA_KEY, JSON.stringify(data));
+    console.info(`[PoemBud] save prefs loggedIn=${snapshot.profile.loggedIn} level=${snapshot.profile.level} todayMinutes=${snapshot.progress.todayMinutes} weeklyGoal=${snapshot.progress.weeklyGoalPercent}`);
+    await prefs.put(DATA_KEY, JSON.stringify(snapshot));
     await prefs.flush();
+    syncPoemBudAppStorage(snapshot);
   }
 }

@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { audio } from '@kit.AudioKit';
+import { fileIo as fs } from '@kit.CoreFileKit';
 import { media } from '@kit.MediaKit';
 
 export type PoemAudioPlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused';
@@ -8,6 +9,7 @@ export class PoemAudioPlayer {
   private static player: media.AVPlayer | null = null;
   private static rawContext: common.UIAbilityContext | null = null;
   private static rawPath: string = '';
+  private static localFile: fs.File | null = null;
   private static playbackStatus: PoemAudioPlaybackStatus = 'idle';
   private static playerToken: number = 0;
 
@@ -54,14 +56,27 @@ export class PoemAudioPlayer {
     }
   }
 
+  private static closeLocalFile(file: fs.File | null): void {
+    if (!file) {
+      return;
+    }
+
+    try {
+      fs.closeSync(file);
+    } catch (_err) {
+    }
+  }
+
   private static async stopAndReleaseCurrentPlayer(): Promise<void> {
     const player = PoemAudioPlayer.player;
     const rawContext = PoemAudioPlayer.rawContext;
     const rawPath = PoemAudioPlayer.rawPath;
+    const localFile = PoemAudioPlayer.localFile;
 
     PoemAudioPlayer.player = null;
     PoemAudioPlayer.rawContext = null;
     PoemAudioPlayer.rawPath = '';
+    PoemAudioPlayer.localFile = null;
 
     if (player) {
       try {
@@ -71,6 +86,7 @@ export class PoemAudioPlayer {
     }
 
     await PoemAudioPlayer.closeCurrentRawFd(rawContext, rawPath);
+    PoemAudioPlayer.closeLocalFile(localFile);
   }
 
   private static async bindAndStartRawPlayer(
@@ -270,6 +286,77 @@ export class PoemAudioPlayer {
       await PoemAudioPlayer.stopAndReleaseCurrentPlayer();
     });
     player.url = uri;
+  }
+
+  static async playFile(filePath: string, playbackKey: string = filePath): Promise<void> {
+    const token = PoemAudioPlayer.playerToken + 1;
+    PoemAudioPlayer.playerToken = token;
+    await PoemAudioPlayer.stopAndReleaseCurrentPlayer();
+
+    const file = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
+    const player = await media.createAVPlayer();
+    PoemAudioPlayer.player = player;
+    PoemAudioPlayer.localFile = file;
+    PoemAudioPlayer.setPlaybackState('loading', playbackKey);
+    player.on('stateChange', async (state: string) => {
+      if (!PoemAudioPlayer.isActivePlayer(player, token)) {
+        return;
+      }
+
+      try {
+        console.info(`[PoemAudioPlayer] file stateChange=${state} currentTime=${player.currentTime} duration=${player.duration}`);
+        if (state === 'initialized') {
+          player.audioRendererInfo = {
+            content: audio.ContentType.CONTENT_TYPE_MUSIC,
+            usage: audio.StreamUsage.STREAM_USAGE_MUSIC,
+            rendererFlags: 0,
+            volumeMode: audio.AudioVolumeMode.SYSTEM_GLOBAL
+          };
+          PoemAudioPlayer.logMusicStreamState();
+          await PoemAudioPlayer.logActiveRenderers('before-prepare');
+          await player.prepare();
+          return;
+        }
+
+        if (state === 'prepared') {
+          player.setVolume(1.0);
+          console.info('[PoemAudioPlayer] file setVolume(1.0) after prepared');
+          await player.play();
+          return;
+        }
+
+        if (state === 'playing') {
+          PoemAudioPlayer.setPlaybackState('playing', playbackKey);
+          PoemAudioPlayer.logMusicStreamState();
+          await PoemAudioPlayer.logActiveRenderers('playing');
+          return;
+        }
+
+        if (state === 'paused') {
+          PoemAudioPlayer.setPlaybackState('paused', playbackKey);
+          return;
+        }
+
+        if (state === 'completed') {
+          PoemAudioPlayer.setPlaybackState('idle', '');
+          await PoemAudioPlayer.stopAndReleaseCurrentPlayer();
+        }
+      } catch (err) {
+        console.error(`Failed to advance file AVPlayer state=${state}: ${JSON.stringify(err)}`);
+        PoemAudioPlayer.setPlaybackState('idle', '');
+        await PoemAudioPlayer.stopAndReleaseCurrentPlayer();
+      }
+    });
+    player.on('error', async (error) => {
+      if (!PoemAudioPlayer.isActivePlayer(player, token)) {
+        return;
+      }
+
+      console.error(`AVPlayer file error: ${JSON.stringify(error)}`);
+      PoemAudioPlayer.setPlaybackState('idle', '');
+      await PoemAudioPlayer.stopAndReleaseCurrentPlayer();
+    });
+    player.url = `fd://${file.fd}`;
   }
 
   static async release(): Promise<void> {
